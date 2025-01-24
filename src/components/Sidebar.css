@@ -1,0 +1,117 @@
+.sidebar {
+      width: 280px;
+      background-color: #f9f9f9;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #e0e0e0;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .sidebar-actions {
+      display: flex;
+    }
+
+    .icon {
+      font-size: 20px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 8px;
+      margin-bottom: 20px;
+    }
+
+    .search-bar input {
+      border: none;
+      outline: none;
+      margin-left: 8px;
+      flex: 1;
+    }
+
+    .sidebar-nav {
+      margin-bottom: 20px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .nav-item.active {
+      background-color: #e0e0e0;
+    }
+
+    .nav-item .icon {
+      margin-right: 10px;
+    }
+
+    .nav-item .shortcut {
+      margin-left: auto;
+      color: #888;
+    }
+
+    .pinned-section,
+    .chat-history-section {
+      margin-bottom: 20px;
+    }
+
+    .pinned-header,
+    .chat-history-header {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .pinned-list,
+    .chat-history-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .pinned-list li,
+    .chat-history-list li {
+      padding: 8px 0;
+      cursor: pointer;
+      color: #333;
+    }
+
+    .new-chat-button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      align-self: flex-start;
+    }
