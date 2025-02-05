@@ -1,0 +1,289 @@
+/* 可以复用 Library.css 的样式，因为布局相同 */
+.docs-container {
+  display: flex;
+  height: 100%;
+  background: #f9fafb;
+}
+
+.projects-sidebar {
+  width: 280px;
+  min-width: 280px;
+  border-right: 1px solid #e5e7eb;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.projects-header {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.projects-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.new-project-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.new-project-btn:hover {
+  background: #f3f4f6;
+}
+
+.projects-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.project-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.project-item:hover {
+  background: #f3f4f6;
+}
+
+.project-item.active {
+  background: #f0f7ff;
+  color: #3b82f6;
+}
+
+.project-icon {
+  margin-right: 0.75rem;
+  color: #6b7280;
+  width: 20px;
+  height: 20px;
+}
+
+.project-info {
+  flex: 1;
+  min-width: 0; /* 防止文本溢出 */
+}
+
+.project-info h3 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.project-count {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.arrow-icon {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  color: #6b7280;
+  opacity: 0.5;
+}
+
+.project-item:hover .arrow-icon {
+  display: none;
+}
+
+.project-item.active .project-icon {
+  color: #3b82f6;
+}
+
+.project-meta {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.documents-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.documents-header {
+  margin-bottom: 2rem;
+}
+
+.documents-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.documents-description {
+  color: #6b7280;
+}
+
+.document-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.document-card h3 {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.document-card p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.document-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.meta-left {
+  display: flex;
+  gap: 1rem;
+  color: #6b7280;
+}
+
+.meta-right {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.share-btn, .more-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.no-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6b7280;
+}
+
+.create-project-form {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.create-project-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.create-project-form input,
+.create-project-form textarea {
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.create-project-form textarea {
+  height: 80px;
+  resize: none;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.form-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.form-actions button[type="button"] {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+}
+
+.form-actions button[type="submit"] {
+  background: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.project-date {
+  color: #6b7280;
+}
+
+.project-actions {
+  display: none;
+  margin-left: auto;
+  padding-left: 0.5rem;
+}
+
+.project-item:hover .project-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.icon-button {
+  padding: 0.25rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+.icon-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.edit-btn:hover {
+  color: #3b82f6;
+  background: #f0f7ff;
+}
+
+.delete-btn:hover {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.project-item.active .project-actions {
+  background: #f0f7ff;
+} 

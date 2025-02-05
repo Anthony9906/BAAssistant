@@ -1,5 +1,65 @@
-.app-container {
-      display: flex;
-      width: 100%;
-      height: 100%;
-    }
+:root {
+  font-size: 14px;  /* 设置基础字体大小 */
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.sidebar {
+  min-width: 220px;
+  height: 100%;
+  border-right: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.main-content {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+  background: #f9fafb;
+}
+
+/* 当显示 chat 视图时的布局 */
+.chat-container {
+  flex: 1;
+  display: flex;
+}
+
+/* 当显示 library 视图时，让其占满整个主内容区域 */
+.library-container {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* 调整一些通用的字体大小 */
+h1 {
+  font-size: 1.5rem;  /* 21px */
+}
+
+h2 {
+  font-size: 1.25rem;  /* 17.5px */
+}
+
+p {
+  font-size: 0.875rem;  /* 12.25px */
+}
+
+input, button {
+  font-size: 0.875rem;  /* 12.25px */
+}
+
+.chat-history-header, 
+.sidebar-nav span,
+.message-sender {
+  font-size: 0.75rem;  /* 10.5px */
+}
+
+.shortcut {
+  font-size: 0.75rem;  /* 10.5px */
+}
