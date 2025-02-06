@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Docs.css';
 import { FiFolder, FiArrowRight, FiPlus, FiEdit2, FiTrash2, FiBox } from 'react-icons/fi';
 import { supabase } from '../../lib/supabase';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 function Docs() {
   const [projects, setProjects] = useState([]);
@@ -107,6 +108,7 @@ function Docs() {
 
   return (
     <div className="docs-container">
+      {loading && <LoadingSpinner />}
       {/* 左侧项目列表 */}
       <div className="projects-sidebar">
         <div className="projects-header">

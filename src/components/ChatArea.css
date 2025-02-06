@@ -1,7 +1,11 @@
 .chat-area {
       flex: 1;
+      min-width: 380px;
+      height: 90%;
       display: flex;
       flex-direction: column;
+      background: white;
+      position: relative;
       padding: 20px;
     }
 
@@ -30,7 +34,8 @@
     .message-header {
       display: flex;
       align-items: center;
-      margin-bottom: 5px;
+      padding: 8px 16px;
+      position: relative;
     }
 
     .message-avatar {
@@ -41,19 +46,20 @@
     }
 
     .message-sender {
-      font-weight: bold;
-      margin-right: 10px;
+      font-weight: 500;
+      margin-right: 8px;
     }
 
     .message-time {
-      color: #888;
+      color: #6b7280;
+      font-size: 0.875rem;
     }
 
     .message-content {
-      background-color: #f0f0f0;
-      padding: 10px;
-      border-radius: 8px;
+      padding: 0 16px 16px;
+      line-height: 1.5;
       position: relative;
+      font-size: 12px;
     }
 
     .message-content-text {
@@ -62,24 +68,62 @@
 
     .message-actions {
       display: flex;
-      margin-bottom: 10px;
+      gap: 4px;
+      margin-left: auto;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .message-group:hover .message-actions {
+      opacity: 1;
     }
 
     .message-action-button {
-      background-color: #e0e0e0;
+      background: none;
       border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      margin-right: 5px;
+      padding: 6px;
       cursor: pointer;
+      border-radius: 4px;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .message-action-button:hover {
+      background-color: #f3f4f6;
+      color: #3b82f6;
+    }
+
+    .action-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* 工具提示样式 */
+    .message-action-button[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      top: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f2937;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     .message-icons {
+      position: absolute;
+      bottom: 8px;
+      right: 16px;
       display: flex;
       align-items: center;
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
+      gap: 8px;
     }
 
     .message-icons .icon {
@@ -89,8 +133,11 @@
     }
 
     .tokens {
-      margin-left: 10px;
-      color: #888;
+      font-size: 0.75rem;
+      color: #6b7280;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background-color: #f3f4f6;
     }
 
     .chat-input {
@@ -227,6 +274,7 @@
     .ai-avatar {
       background: #3b82f6;
       color: white;
+      margin-right: 10px;
     }
 
     .ai-avatar-inner {
@@ -252,4 +300,11 @@
     .chat-input input:disabled {
       background: #f3f4f6;
       cursor: not-allowed;
+    }
+
+    .message-group.assistant {
+      background-color: #e4e6e7; /* AI 回复的背景颜色 */
+      border-radius: 8px;
+      padding: 8px;
+      margin: 8px 0;
     }

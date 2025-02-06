@@ -1,39 +1,44 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import Library from './components/Library/Library';
 import ChatArea from './components/ChatArea';
 import ModelInfo from './components/ModelInfo';
-import Library from './components/Library/Library';
 import Docs from './components/Docs/Docs';
 import './App.css';
-import styled from 'styled-components';
-
-const ModelInfoStyled = styled.div`
-  width: 420px;
-`;
 
 function App() {
-  const [currentView, setCurrentView] = useState('chat'); // 'chat' or 'library' or 'docs'
-
-  const handleNavigation = (view) => {
-    setCurrentView(view);
-  };
-
   return (
-    <div className="app">
-      <Sidebar onNavigate={handleNavigation} currentView={currentView} />
-      <main className="main-content">
-        {currentView === 'chat' && (
-          <>
-            <ChatArea />
-            <ModelInfoStyled>
-              <ModelInfo />
-            </ModelInfoStyled>
-          </>
-        )}
-        {currentView === 'library' && <Library />}
-        {currentView === 'docs' && <Docs />}
-      </main>
-    </div>
+    <Router>
+      <div className="app">
+        <Sidebar />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Library />} />
+            <Route path="/library" element={<Library />} />
+            <Route path="/docs" element={<Docs />} />
+            <Route 
+              path="/chats/:chatId" 
+              element={
+                <div className="chat-container">
+                  <ChatArea />
+                  <ModelInfo />
+                </div>
+              } 
+            />
+            <Route 
+              path="/chats" 
+              element={
+                <div className="chat-container">
+                  <ChatArea />
+                  <ModelInfo />
+                </div>
+              } 
+            />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
 }
 

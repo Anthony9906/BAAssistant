@@ -1,10 +1,10 @@
 .sidebar {
       width: 220px;
-      background-color: #f9f9f9;
-      padding: 20px;
+      background-color: #ffffff;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid #e0e0e0;
+      border-right: 1px solid #e5e7eb;
     }
 
     .sidebar-header {
@@ -37,47 +37,83 @@
     }
 
     .search-bar {
+      background: #f4f4f5;
+      border-radius: 8px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
-      background-color: #fff;
-      border: 1px solid #e0e0e0;
-      border-radius: 4px;
-      padding: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .search-bar input {
       border: none;
+      background: none;
       outline: none;
-      margin-left: 8px;
-      flex: 1;
+      width: 100%;
+      font-size: 14px;
+      color: #71717a;
+      margin-right: 8px;
+    }
+
+    .search-shortcut {
+      background: #ffffff;
+      border: 1px solid #e4e4e7;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 12px;
+      color: #71717a;
     }
 
     .sidebar-nav {
       margin-bottom: 20px;
     }
 
+    .nav-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
     .nav-item {
       display: flex;
       align-items: center;
-      padding: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
       cursor: pointer;
-      border-radius: 4px;
-      margin-bottom: 5px;
-      color: #333;
+      border: none;
+      background: none;
+      color: #52525b;
+      font-size: 15px;
+      width: 100%;
+      text-align: left;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background-color: #f4f4f5;
     }
 
     .nav-item.active {
-      background-color: #e0e0e0;
+      background-color: #f4f4f5;
+      color: #18181b;
     }
 
-    .nav-item .icon {
-      margin-right: 10px;
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 12px;
     }
 
-    .nav-item .shortcut {
-      margin-left: auto;
-      color: #888;
+    .shortcut-badge {
+      position: absolute;
+      right: 12px;
+      background: #ffffff;
+      border: 1px solid #e4e4e7;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 12px;
+      color: #71717a;
     }
 
     .pinned-section,
@@ -114,4 +150,63 @@
       cursor: pointer;
       font-size: 16px;
       align-self: flex-start;
+    }
+
+    .chat-history-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .chat-history-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      margin: 4px 0;
+      cursor: pointer;
+      border-radius: 6px;
+      color: #52525b;
+      transition: all 0.2s ease;
+    }
+
+    .chat-history-item:hover {
+      color: #3b82f6;
+    }
+
+    .chat-history-item:hover .chat-icon {
+      color: #3b82f6;
+    }
+
+    .chat-history-item.active {
+      color: #3b82f6;
+      background-color: transparent;
+    }
+
+    .chat-history-item.active .chat-icon {
+      color: #3b82f6;
+    }
+
+    .chat-icon {
+      min-width: 16px;
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      color: #6b7280;
+      transition: color 0.2s ease;
+    }
+
+    .chat-title {
+      font-size: 0.875rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-history-header {
+      padding: 0 12px;
+      margin-bottom: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      letter-spacing: 0.05em;
     }
