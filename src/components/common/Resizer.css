@@ -1,0 +1,14 @@
+.resizer {
+  width: 4px;
+  background-color: #e5e7eb;
+  cursor: col-resize;
+  transition: background-color 0.2s;
+}
+
+.resizer:hover {
+  background-color: #d1d5db;
+}
+
+.resizer:active {
+  background-color: #9ca3af;
+}

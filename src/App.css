@@ -4,9 +4,8 @@
 
 .app {
   display: flex;
-  height: 100vh;
+  height: 90vh;
   width: 100vw;
-  overflow: hidden;
 }
 
 .sidebar {
@@ -19,6 +18,7 @@
 .main-content {
   flex: 1;
   height: 100%;
+  padding: 14px;
   display: flex;
   overflow: hidden;
   background: #f9fafb;
@@ -28,6 +28,17 @@
 .chat-container {
   flex: 1;
   display: flex;
+  overflow: hidden;
+}
+
+.chat-area-wrapper {
+  height: 100%;
+  overflow: auto;
+}
+
+.model-info-wrapper {
+  height: 100%;
+  overflow: auto;
 }
 
 /* 当显示 library 视图时，让其占满整个主内容区域 */

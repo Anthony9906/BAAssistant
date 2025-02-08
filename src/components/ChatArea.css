@@ -1,12 +1,13 @@
 .chat-area {
       flex: 1;
       min-width: 380px;
-      height: 90%;
+      height: 100%;
+      padding-right: 20px;
       display: flex;
       flex-direction: column;
       background: white;
       position: relative;
-      padding: 20px;
+      overflow: hidden;
     }
 
     .chat-header {
@@ -14,6 +15,14 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      flex-shrink: 0;
+      padding: 0px 20px 0 20px;
+    }
+
+    .chat-header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
 
     .chat-header h2 {
@@ -21,14 +30,68 @@
       font-size: 20px;
     }
 
+    .generate-doc-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.375rem;
+      color: #374151;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .generate-doc-btn:hover:not(:disabled) {
+      background-color: #e5e7eb;
+    }
+
+    .generate-doc-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .generate-doc-btn .icon {
+      width: 1rem;
+      height: 1rem;
+    }
+
     .chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding-bottom: 20px;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      padding: 20px;
     }
 
     .message-group {
       margin-bottom: 20px;
+      width: 100%;
+      padding: 8px 0;
+      position: relative;
+    }
+
+    .message-group:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .message-group.assistant {
+      background-color: #e3ecfa; /* AI 回复的背景颜色 */
+      border-radius: 8px;
+      padding: 8px;
+      margin: 8px 0;
+    }
+
+    .message-group.assistant .message-content {
+      background-color: #e3ecfa; 
+    }
+
+    .message-group.user {
+      background-color: #fff;
+      border-radius: 8px;
     }
 
     .message-header {
@@ -36,6 +99,7 @@
       align-items: center;
       padding: 8px 16px;
       position: relative;
+      gap: 8px;
     }
 
     .message-avatar {
@@ -53,13 +117,29 @@
     .message-time {
       color: #6b7280;
       font-size: 0.875rem;
+      margin-right: 8px;
+    }
+
+    .tokens {
+      font-size: 0.75rem;
+      color: #6b7280;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background-color: #d3e4ff;
+      position: static;
+      display: inline-flex;
+      align-items: center;
     }
 
     .message-content {
-      padding: 0 16px 16px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
       line-height: 1.5;
-      position: relative;
       font-size: 12px;
+      padding: 12px 16px;
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     .message-content-text {
@@ -132,18 +212,11 @@
       color: #888;
     }
 
-    .tokens {
-      font-size: 0.75rem;
-      color: #6b7280;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background-color: #f3f4f6;
-    }
-
     .chat-input {
-      padding: 1rem;
+      padding: 20px;
       border-top: 1px solid #e5e7eb;
       background: #fff;
+      flex-shrink: 0;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
@@ -268,7 +341,7 @@
     }
 
     .user-avatar {
-      background: #e5e7eb;
+      background: #e0eee8;
     }
 
     .ai-avatar {
@@ -287,24 +360,27 @@
       transition: opacity 0.3s ease;
     }
 
-    .message-content {
-      white-space: pre-wrap;
-    }
-
-    .chat-input form {
+    .loading-container {
       display: flex;
-      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
       width: 100%;
+      overflow: hidden;
     }
 
-    .chat-input input:disabled {
-      background: #f3f4f6;
-      cursor: not-allowed;
-    }
-
-    .message-group.assistant {
-      background-color: #e4e6e7; /* AI 回复的背景颜色 */
-      border-radius: 8px;
-      padding: 8px;
+    /* 确保代码块正确显示 */
+    .message-content pre {
+      background-color: #f6f8fa;
+      border-radius: 6px;
+      overflow-x: auto;
       margin: 8px 0;
+    }
+
+    .message-content code {
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+      background-color: rgba(0, 0, 0, 0.04);
+      padding: 2px 4px;
+      border-radius: 3px;
     }
