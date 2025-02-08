@@ -29,7 +29,6 @@ function ChatContainer() {
   const fetchChatData = async () => {
     setIsLoading(true);
     try {
-      // 获取chat信息
       const { data: chat, error: chatError } = await supabase
         .from('chats')
         .select('*')
@@ -42,7 +41,6 @@ function ChatContainer() {
         setTemplatePrompt(chat.template_prompt);
       }
 
-      // 获取消息历史
       const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
         .select('*')

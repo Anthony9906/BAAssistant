@@ -4,79 +4,38 @@ import './ChatArea.css';
 import { FiPaperclip, FiImage, FiMic, FiGrid, FiSend, FiBook, FiUser, FiCopy, FiShare2 } from 'react-icons/fi';
 import LoadingSpinner from './common/LoadingSpinner';
 import { supabase } from '../lib/supabase';
+import OpenAI from 'openai';
 
-function ChatArea() {
+export const openai = new OpenAI({
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  baseURL: 'https://api.gptsapi.net/v1',
+  dangerouslyAllowBrowser: true
+});
+
+function ChatArea({ messages: parentMessages, onNewMessage, isLoading: parentLoading }) {
   const { chatId } = useParams();
-  const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [loading, setLoading] = useState(!!chatId);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    if (chatId) {
-      fetchChatAndMessages();
-    } else {
-      setLoading(false);
+    // 如果有初始消息且没有 AI 回复，发送 AI 请求
+    if (parentMessages?.length === 1 && 
+        parentMessages[0].role === 'user' && 
+        !parentMessages.some(msg => msg.role === 'assistant')) {
+      sendMessage(null, parentMessages[0].content);
     }
-  }, [chatId]);
-
-  const fetchChatAndMessages = async () => {
-    if (!chatId) return;
-
-    try {
-      // 获取chat信息
-      const { data: chat, error: chatError } = await supabase
-        .from('chats')
-        .select('*')
-        .eq('id', chatId)
-        .single();
-
-      if (chatError) throw chatError;
-
-      // 获取消息历史
-      const { data: messagesData, error: messagesError } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .order('created_at', { ascending: true });
-
-      if (messagesError) throw messagesError;
-
-      setMessages(messagesData.map(msg => ({
-        ...msg,
-        timestamp: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      })));
-
-      // 如果是新chat且有模板提示词，自动发送第一条消息
-      if (chat.template_prompt && messagesData.length === 1) {
-        sendMessage(null, chat.template_prompt);
-      }
-    } catch (error) {
-      console.error('Error fetching chat:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [parentMessages]);
 
   const sendMessage = async (e, content = null) => {
     if (e) e.preventDefault();
     const messageContent = content || inputMessage;
     if ((!messageContent.trim() && !content) || isLoading) return;
 
-    const userMessage = {
-      role: 'user',
-      content: messageContent,
-      chat_id: chatId,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
     setIsLoading(true);
 
     try {
-      // 保存用户消息到数据库
+      // 只在用户手动发送消息时保存到数据库
       if (chatId && !content) {
         const { error: messageError } = await supabase
           .from('messages')
@@ -87,29 +46,33 @@ function ChatArea() {
           }]);
 
         if (messageError) throw messageError;
+        
+        onNewMessage({
+          role: 'user',
+          content: messageContent,
+          chat_id: chatId,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
       }
 
       // 发送到 AI API
-      const response = await fetch('https://api.gptsapi.net/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [...messages, userMessage].map(msg => ({
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "你是一名资深的项目管理专家..."
+          },
+          ...parentMessages.map(msg => ({
             role: msg.role,
             content: msg.content
           }))
-        })
+        ],
       });
 
-      const data = await response.json();
-      
       const assistantMessage = {
         role: 'assistant',
-        content: data.choices[0].message.content,
+        content: completion.choices[0].message.content,
         chat_id: chatId,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
@@ -127,7 +90,8 @@ function ChatArea() {
         if (assistantError) throw assistantError;
       }
 
-      setMessages(prev => [...prev, assistantMessage]);
+      onNewMessage(assistantMessage);
+      setInputMessage('');
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -137,14 +101,14 @@ function ChatArea() {
 
   return (
     <div className="chat-area">
-      {loading && <LoadingSpinner />}
+      {parentLoading && <LoadingSpinner />}
       <div className="chat-header">
         <h2>AI <span style={{fontSize: '12px', color: '#999', marginLeft: '4px', fontWeight: 'normal'}}>gpt-4o-mini</span></h2>
-        <button className="new-chat-button" onClick={() => setMessages([])}>+ New chat</button>
+        <button className="new-chat-button" onClick={() => onNewMessage({ role: 'user', content: '', chat_id: chatId, timestamp: '' })}>+ New chat</button>
       </div>
 
       <div className="chat-messages">
-        {messages.map((message, index) => (
+        {parentMessages.map((message, index) => (
           <div key={index} className={`message-group ${message.role === 'assistant' ? 'assistant' : ''}`}>
             <div className="message-header">
               {message.role === 'user' ? (

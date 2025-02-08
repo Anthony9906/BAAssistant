@@ -150,18 +150,20 @@ function Library() {
         .select()
         .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // 创建第一条系统消息
-      await supabase
-        .from('messages')
-        .insert([
-          {
-            chat_id: chat.id,
-            role: 'user',
-            content: 'Can you help to generate my Docs?'
-          }
-        ]);
+        // 只创建一条初始消息
+      const { error: messageError } = await supabase
+      .from('messages')
+      .insert([
+        {
+          chat_id: chat.id,
+          role: 'user',
+          content: `${doc.prompt}\n\n现在请根据我的要求帮助我一起创建这份文档吧`
+        }
+      ]);
+
+      if (messageError) throw messageError;
 
       // 导航到新创建的 chat
       navigate(`/chats/${chat.id}`);
