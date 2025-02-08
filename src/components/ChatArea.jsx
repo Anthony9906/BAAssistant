@@ -18,6 +18,21 @@ function ChatArea({ messages: parentMessages, onNewMessage, isLoading: parentLoa
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // 添加滚动到底部的函数
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'end'
+    });
+  };
+
+  // 当消息更新时滚动到底部
+  useEffect(() => {
+    if (!parentLoading && parentMessages.length > 0) {
+      scrollToBottom();
+    }
+  }, [parentMessages, parentLoading]);
+
   useEffect(() => {
     // 如果有初始消息且没有 AI 回复，发送 AI 请求
     if (parentMessages?.length === 1 && 
@@ -162,16 +177,23 @@ function ChatArea({ messages: parentMessages, onNewMessage, isLoading: parentLoa
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} style={{ height: '20px' }} />
       </div>
 
       <form onSubmit={sendMessage} className="chat-input">
-        <input
-          type="text"
+        <textarea
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage(e);
+            }
+          }}
           placeholder="How can I help you?"
           disabled={isLoading}
+          rows="1"
+          style={{ height: 'auto' }}
         />
         <div className="chat-input-footer">
           <div className="chat-input-icons">
