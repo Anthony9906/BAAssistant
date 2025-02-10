@@ -1,0 +1,58 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Production build
+/dist
+/build
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+
+# Testing
+/coverage
+
+# Misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# Debug
+.debug
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+
+# Local Netlify folder
+.netlify
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
