@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useParams, Navigate } from 'react-router-dom';
 import { supabase } from './lib/supabase';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Login from './components/Auth/Login';
 import Sidebar from './components/Sidebar';
 import Library from './components/Library/Library';
 import ChatArea from './components/ChatArea';
 import ModelInfo from './components/ModelInfo';
 import Docs from './components/Docs/Docs';
 import Resizer from './components/common/Resizer';
+import SignUp from './components/Auth/SignUp';
 import './App.css';
+import { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 // 聊天容器组件
 function ChatContainer() {
@@ -16,7 +22,9 @@ function ChatContainer() {
   const [templatePrompt, setTemplatePrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { chatId } = useParams();
-
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
   useEffect(() => {
     if (chatId) {
       fetchChatData();
@@ -28,14 +36,23 @@ function ChatContainer() {
 
   const fetchChatData = async () => {
     setIsLoading(true);
+
     try {
       const { data: chat, error: chatError } = await supabase
         .from('chats')
         .select('*')
         .eq('id', chatId)
+        .eq('user_id', user.id)
         .single();
 
-      if (chatError) throw chatError;
+      if (chatError) {
+        if (chatError.code === 'PGRST116') {
+          toast.error('聊天记录不存在或无权访问');
+          navigate('/library');
+          return;
+        }
+        throw chatError;
+      }
 
       if (chat.template_prompt) {
         setTemplatePrompt(chat.template_prompt);
@@ -45,6 +62,7 @@ function ChatContainer() {
         .from('messages')
         .select('*')
         .eq('chat_id', chatId)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: true });
 
       if (messagesError) throw messagesError;
@@ -57,6 +75,8 @@ function ChatContainer() {
       setMessages(formattedMessages);
     } catch (error) {
       console.error('Error fetching chat data:', error);
+      toast.error('加载聊天记录失败');
+      navigate('/library');
     } finally {
       setIsLoading(false);
     }
@@ -84,8 +104,8 @@ function ChatContainer() {
         <ChatArea 
           messages={messages} 
           onNewMessage={handleNewMessage}
-          templatePrompt={templatePrompt}
           isLoading={isLoading}
+          templatePrompt={templatePrompt}
         />
       </div>
       <Resizer onResize={handleResize} />
@@ -96,22 +116,63 @@ function ChatContainer() {
   );
 }
 
+// 受保护的路由组件
+function PrivateRoute({ children }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  return user ? children : <Navigate to="/login" />;
+}
+
+function AppContent() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // 未登录用户只能访问登录和注册页面
+  if (!user) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
+  // 已登录用户的路由
+  return (
+    <div className="app">
+      <Sidebar />
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<Navigate to="/library" replace />} />
+          <Route path="/library" element={<Library />} />
+          <Route path="/docs" element={<Docs />} />
+          <Route path="/chats/:chatId" element={<ChatContainer />} />
+          <Route path="/chats" element={<ChatContainer />} />
+          <Route path="*" element={<Navigate to="/library" />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
+
 function App() {
   return (
-    <Router>
-      <div className="app">
-        <Sidebar />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Library />} />
-            <Route path="/library" element={<Library />} />
-            <Route path="/docs" element={<Docs />} />
-            <Route path="/chats/:chatId" element={<ChatContainer />} />
-            <Route path="/chats" element={<ChatContainer />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+          <Toaster />
+        </Router>
+      </AuthProvider>
+    </>
   );
 }
 

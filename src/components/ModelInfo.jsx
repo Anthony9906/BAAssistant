@@ -48,12 +48,12 @@ function ModelInfo() {
 
   const providers = [
     {
-      name: 'DeepSeek',
-      logo: 'https://cdn.deepseek.com/platform/favicon.png'
-    },
-    {
       name: 'OpenAI',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg'
+    },
+    {
+      name: 'DeepSeek',
+      logo: 'https://cdn.deepseek.com/platform/favicon.png'
     },
     {
       name: 'Anthropic',
@@ -61,7 +61,11 @@ function ModelInfo() {
     },
     {
       name: 'Meta AI',
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg'
+      logo: 'https://images.seeklogo.com/logo-png/42/1/meta-icon-new-facebook-2021-logo-png_seeklogo-424014.png?v=1957907069834115656'
+    },
+    {
+      name: 'Gemini AI',
+      logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJeGbkM-VT8QxLK2nGoQ7E2_g3-1xEt6LmtA&s'
     },
     {
       name: 'xAI',
@@ -71,21 +75,21 @@ function ModelInfo() {
 
   return (
     <div className="model-info">
-      <div className="model-header">
-        <LuFeather className="model-logo" />
+      <div className="model-info-header">
+        <LuFeather className="model-info-logo" />
         <h2>LLM Project Docs Generator</h2>
       </div>
-      <p className="model-description">
+      <p className="model-info-description">
         A helper to generate docs for your project with LLM Agent, reproducible outputs, parallel function calling, and more...
       </p>
       
-      <div className="llm-providers">
+      <div className="model-info-providers">
         {providers.map((provider) => (
           <img 
             key={provider.name}
             src={provider.logo} 
             alt={provider.name} 
-            className="provider-logo"
+            className="provider-info-logo"
             title={provider.name}
           />
         ))}

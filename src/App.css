@@ -4,7 +4,7 @@
 
 .app {
   display: flex;
-  height: 90vh;
+  height: 95vh;
   width: 100vw;
 }
 
@@ -18,7 +18,7 @@
 .main-content {
   flex: 1;
   height: 100%;
-  padding: 14px;
+  padding: 14px 14px 0px 0px;
   display: flex;
   overflow: hidden;
   background: #f9fafb;

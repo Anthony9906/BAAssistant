@@ -1,0 +1,389 @@
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  background: linear-gradient(145deg, #7a41f5 0%, #6db0ff 100%);
+  overflow: hidden;
+  padding: 40px 20px;
+}
+
+/* 增强装饰性背景元素的效果 */
+.auth-container::before {
+  content: '';
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(circle at center, 
+    rgba(255, 255, 255, 0.25) 0%,    /* 增加起始透明度 */
+    rgba(255, 255, 255, 0.15) 20%,   /* 增加中间透明度 */
+    rgba(255, 255, 255, 0.1) 30%,    /* 增加过渡透明度 */
+    transparent 70%);
+  top: -25%;
+  left: -25%;
+  animation: rotate 20s linear infinite;
+}
+
+.auth-container::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.25) 0%, transparent 35%),  /* 增加亮度和范围 */
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.25) 0%, transparent 35%),  /* 增加亮度和范围 */
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),   /* 增加中心光晕 */
+    linear-gradient(45deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);             /* 增加对角线渐变 */
+  pointer-events: none;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    transform: rotate(360deg) scale(1.1);
+  }
+}
+
+.auth-content {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 60px;
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.product-info {
+  flex: 1;
+  color: white;
+  max-width: 450px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 28px 32px;
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.model-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.model-logo {
+  width: 48px;
+  height: 48px;
+  color: white;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.model-logo:hover {
+  transform: scale(1.05);
+}
+
+.model-header h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.model-description {
+  font-size: 12px;
+  line-height: 1.2;
+  margin-bottom: 44px;
+  color: #ffffff;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  opacity: 0.95;
+}
+
+.login-llm-providers {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.login-provider-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: white;
+  padding: 5px;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  object-fit: contain;
+}
+
+.login-provider-logo:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.auth-card {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.97);
+  padding: 28px 32px;
+  border-radius: 20px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+  width: 100%;
+  max-width: 400px;
+  min-width: 280px;
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 为产品信息卡片添加光晕效果 */
+.product-info::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.1)
+  );
+  border-radius: 24px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.auth-card h2 {
+  margin-bottom: 24px;
+  text-align: center;
+  color: #1a1a1a;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 6px;
+}
+
+.form-group:last-of-type {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #4b5563;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.auth-card button {
+  width: 100%;
+  padding: 0.875rem;
+  background: linear-gradient(to right, #3b82f6, #60a5fa);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.auth-card button:hover {
+  background: linear-gradient(to right, #2563eb, #3b82f6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+}
+
+.auth-card button:active {
+  transform: translateY(0);
+}
+
+.auth-card button:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-error {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  border: 1px solid #fecaca;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.auth-links {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.auth-links a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.auth-links a:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* 响应式设计优化 */
+@media (max-width: 1200px) {
+  .auth-content {
+    gap: 40px;
+  }
+  
+  .product-info {
+    padding: 32px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .auth-content {
+    flex-direction: column;
+    gap: 32px;
+    padding: 16px;
+  }
+
+  .product-info,
+  .auth-card {
+    padding: 24px 28px;
+  }
+
+  .model-header {
+    justify-content: center;
+  }
+
+  .login-llm-providers {
+    justify-content: center;
+  }
+
+  .model-header h2 {
+    font-size: 28px;
+  }
+
+  .model-description {
+    font-size: 18px;
+  }
+
+  .model-logo {
+    width: 48px;
+    height: 48px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .auth-container {
+    padding: 20px;
+  }
+
+  .product-info,
+  .auth-card {
+    padding: 20px 24px;
+  }
+
+  .model-header h2 {
+    font-size: 24px;
+  }
+
+  .model-description {
+    font-size: 16px;
+    margin-bottom: 32px;
+  }
+
+  .model-logo {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+  }
+
+  .login-llm-providers {
+    gap: 16px;
+  }
+
+  .login-provider-logo {
+    width: 32px;
+    height: 32px;
+    padding: 5px;
+  }
+
+  .auth-card h2 {
+    font-size: 24px;
+    margin-bottom: 24px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group:last-of-type {
+    margin-bottom: 24px;
+  }
+
+  .auth-links {
+    margin-top: 24px;
+  }
+}
+
+/* 确保所有元素使用 border-box */
+* {
+  box-sizing: border-box;
+}

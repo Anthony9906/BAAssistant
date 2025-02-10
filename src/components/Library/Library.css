@@ -5,7 +5,7 @@
 }
 
 .library-header {
-  margin-bottom: 2rem;
+  margin-bottom: 0rem;
 }
 
 .library-header h1 {
@@ -70,25 +70,29 @@
 
 .doc-card {
   background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .doc-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .doc-icon {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin-bottom: 4px;
 }
 
 .doc-icon svg {
@@ -97,37 +101,52 @@
 }
 
 .doc-card h3 {
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .doc-description {
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
   line-height: 1.5;
+  flex-grow: 1;
 }
 
 .card-footer {
   display: flex;
-  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
   align-items: center;
 }
 
 .generate-btn {
-  background: #f3f4f6;
-  border: none;
-  padding: 0.5rem 1rem;
+  flex: 1;
+  padding: 8px 16px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.2);
   border-radius: 6px;
-  color: #374151;
-  font-size: 0.875rem;
+  font-size: 13px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .generate-btn:hover {
-  background: #e5e7eb;
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.generate-btn svg {
+  width: 14px;
+  height: 14px;
 }
 
 .more-btn {
@@ -215,18 +234,26 @@
 }
 
 .edit-prompt-btn {
-  background: none;
+  padding: 8px;
+  background: #f3f4f6;
   border: none;
+  border-radius: 6px;
   color: #6b7280;
   cursor: pointer;
-  padding: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  transition: all 0.2s;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.doc-card:hover .edit-prompt-btn {
+  opacity: 1;
+  visibility: visible;
 }
 
 .edit-prompt-btn:hover {
-  background: #f3f4f6;
-  color: #3b82f6;
+  background: #e5e7eb;
+  color: #4b5563;
 } 

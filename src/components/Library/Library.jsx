@@ -1,77 +1,80 @@
 import React, { useState, useEffect } from 'react';
 import './Library.css';
-import { FiHome, FiBox, FiClipboard, FiBarChart2, FiUsers, FiMap, FiLayers, FiFileText, FiCheckSquare, FiFlag, FiEdit } from 'react-icons/fi';
+import { FiHome, FiBox, FiClipboard, FiBarChart2, FiUsers, FiMap, FiLayers, FiFileText, FiCheckSquare, FiFlag, FiEdit, FiPlus, FiEdit2 } from 'react-icons/fi';
 import { supabase } from '../../lib/supabase';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
 
 function Library() {
   const [templates, setTemplates] = useState([]);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const documentTypes = [
     {
       id: 1,
-      title: "Research Plan",
-      description: "Generate comprehensive research plans with objectives, methodologies, and timelines",
+      title: "调研计划",
+      description: "生成包含项目调研对象与目标分析、方法论及关键问题清单的调研计划",
       icon: FiClipboard,
       color: "#3B82F6"
     },
     {
       id: 2,
-      title: "Business Case Analysis",
-      description: "Create detailed analysis of business cases with market insights and recommendations",
+      title: "项目案例分析",
+      description: "创建包含市场洞察和建议的商业案例分析或行业最佳实践分析",
       icon: FiBarChart2,
       color: "#10B981"
     },
     {
       id: 3,
-      title: "Research Report",
-      description: "Compile research findings into well-structured and insightful reports",
+      title: "调研报告",
+      description: "将项目调研发现整理成结构清晰、见解深刻的完整调研报告",
       icon: FiFileText,
       color: "#6366F1"
     },
     {
       id: 4,
-      title: "Project Initiation",
-      description: "Generate project initiation documents with scope, objectives, and success criteria",
+      title: "项目立项文档",
+      description: "生成包含现状分析、目标、价值分析和高阶计划的项目立项文档",
       icon: FiFlag,
       color: "#F59E0B"
     },
     {
       id: 5,
-      title: "User Journey Analysis",
-      description: "Map and analyze user journeys to identify touchpoints and opportunities",
+      title: "用户旅程分析",
+      description: "根据业务流程绘制和分析用户旅程，识别接触点和机会",
       icon: FiMap,
       color: "#EC4899"
     },
     {
       id: 6,
-      title: "Business Model Analysis",
-      description: "Analyze business models with comprehensive market and competitive insights",
+      title: "概念模型分析",
+      description: "根据项目规划与目标，进行业务对象分析并绘制概念模型",
       icon: FiLayers,
       color: "#8B5CF6"
     },
     {
       id: 7,
-      title: "Project Requirements",
-      description: "Document detailed project requirements and specifications",
+      title: "项目需求文档",
+      description: "编写详细的项目需求和规格说明文档",
       icon: FiBox,
       color: "#14B8A6"
     },
     {
       id: 8,
-      title: "Project Plan",
-      description: "Create structured project plans with milestones and deliverables",
+      title: "项目计划书",
+      description: "创建包含里程碑和交付物的结构化项目计划",
       icon: FiUsers,
       color: "#F97316"
     },
     {
       id: 9,
-      title: "Project Closure Report",
-      description: "Generate comprehensive project closure reports and evaluations",
+      title: "结项报告",
+      description: "生成全面的项目结项报告和评估文档",
       icon: FiCheckSquare,
       color: "#6B7280"
     }
@@ -124,14 +127,46 @@ function Library() {
         template.id === typeId ? { ...template, prompt } : template
       ));
       setEditingTemplate(null);
+
+      // 成功提示
+      toast.success('提示词保存成功', {
+        duration: 3000,
+        position: 'top-center',
+        style: {
+          background: '#10B981',
+          color: '#fff',
+          borderRadius: '8px',
+          padding: '12px 24px',
+        },
+      });
     } catch (error) {
       console.error('Error saving prompt:', error);
+      // 错误提示
+      toast.error('提示词保存失败，请重试', {
+        duration: 3000,
+        position: 'top-center',
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          borderRadius: '8px',
+          padding: '12px 24px',
+        },
+      });
     }
   };
 
   const handleGenerate = async (doc) => {
     if (!doc.prompt) {
-      alert('Please set the prompt template for this document type first.');
+      toast.error('请先设置文档提示词模板', {
+        duration: 3000,
+        position: 'top-center',
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          borderRadius: '8px',
+          padding: '12px 24px',
+        },
+      });
       setEditingTemplate(doc);
       return;
     }
@@ -144,24 +179,26 @@ function Library() {
           {
             title: `Generate ${doc.title}`,
             template_id: doc.id,
-            template_prompt: doc.prompt
+            template_prompt: doc.prompt,
+            user_id: user.id
           }
         ])
         .select()
         .single();
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // 只创建一条初始消息
+      // 只创建一条初始消息
       const { error: messageError } = await supabase
-      .from('messages')
-      .insert([
-        {
-          chat_id: chat.id,
-          role: 'user',
-          content: `${doc.prompt}\n\n现在请根据我的要求帮助我一起创建这份文档吧`
-        }
-      ]);
+        .from('messages')
+        .insert([
+          {
+            chat_id: chat.id,
+            role: 'user',
+            content: '可以帮助我一起讨论分析我的项目吗？',
+            user_id: user.id
+          }
+        ]);
 
       if (messageError) throw messageError;
 
@@ -169,6 +206,7 @@ function Library() {
       navigate(`/chats/${chat.id}`);
     } catch (error) {
       console.error('Error creating chat:', error);
+      toast.error('创建对话失败，请重试');
     }
   };
 
@@ -214,13 +252,14 @@ function Library() {
                     className="generate-btn"
                     onClick={() => handleGenerate(doc)}
                   >
-                    Generate
+                    <FiFileText />
+                    <span>Generate</span>
                   </button>
                   <button 
                     className="edit-prompt-btn"
                     onClick={() => setEditingTemplate(doc)}
                   >
-                    <FiEdit />
+                    <FiEdit2 />
                   </button>
                 </div>
               </div>
