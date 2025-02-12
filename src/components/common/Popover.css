@@ -1,0 +1,40 @@
+.popover {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+  border: 1px solid #e5e7eb;
+  animation: popover-fade-in 0.2s ease-out;
+}
+
+@keyframes popover-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 添加一个小三角形指示器 */
+.popover::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  background: white;
+  transform: rotate(45deg);
+  border-left: 1px solid #e5e7eb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.popover.bottom-start::before {
+  left: 16px;
+}
+
+.popover.bottom-end::before {
+  right: 16px;
+} 

@@ -1,35 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './ModelInfo.css';
 import { LuFeather } from "react-icons/lu";
-import { FiCheckCircle, FiMoreVertical, FiMessageSquare, FiSearch, FiFileText } from 'react-icons/fi';
+import { FiCheckCircle, FiMoreVertical, FiMessageSquare, FiSearch, FiFileText, FiFolder, FiTrash2, FiX } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import DocumentPreview from './DocumentPreview';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 function ModelInfo() {
   const [documents, setDocuments] = useState([]);
+  const { user } = useAuth();
+  const [showPreview, setShowPreview] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [projects, setProjects] = useState([]);
+  const [showProjectMenu, setShowProjectMenu] = useState(null);
+  const [projectSearchQuery, setProjectSearchQuery] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
   
   useEffect(() => {
     fetchDocuments();
-  }, []);
+    fetchProjects();
+  }, [user]);
 
   const fetchDocuments = async () => {
+    if (!user) return;
+    
     try {
       const { data, error } = await supabase
-        .from('chats')
+        .from('docs_with_message_count')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDocuments(data);
+      setDocuments(data || []);
     } catch (error) {
       console.error('Error fetching documents:', error);
+      toast.error('获取文档列表失败');
     }
   };
 
-  // 过滤文档
-  const filteredDocuments = documents.filter(doc => 
-    doc.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const fetchProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProjects(data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      toast.error('获取项目列表失败');
+    }
+  };
 
   // 格式化时间
   const formatTime = (timestamp) => {
@@ -73,6 +100,86 @@ function ModelInfo() {
     }
   ];
 
+  // 关联文档到项目
+  const handleAssignToProject = async (docId, projectId) => {
+    try {
+      const { error } = await supabase
+        .from('docs')
+        .update({ project_id: projectId })
+        .eq('id', docId);
+
+      if (error) throw error;
+      
+      // 更新本地文档列表
+      setDocuments(documents.map(doc => 
+        doc.id === docId ? { ...doc, project_id: projectId } : doc
+      ));
+      
+      toast.success('已关联到项目');
+    } catch (error) {
+      console.error('Error assigning document to project:', error);
+      toast.error('关联项目失败');
+    } finally {
+      setShowProjectMenu(null);
+    }
+  };
+
+  // 从项目中移除文档
+  const handleRemoveFromProject = async (docId) => {
+    try {
+      const { error } = await supabase
+        .from('docs')
+        .update({ project_id: null })
+        .eq('id', docId);
+
+      if (error) throw error;
+      
+      // 更新本地文档列表
+      setDocuments(documents.map(doc => 
+        doc.id === docId ? { ...doc, project_id: null } : doc
+      ));
+      
+      toast.success('已从项目中移除');
+    } catch (error) {
+      console.error('Error removing document from project:', error);
+      toast.error('移除失败');
+    } finally {
+      setShowProjectMenu(null);
+    }
+  };
+
+  // 获取文档所属的项目名称，并限制长度
+  const getProjectName = (doc) => {
+    if (!doc.project_id) return "未关联项目";
+    const project = projects.find(p => p.id === doc.project_id);
+    const name = project ? project.name : "未关联项目";
+    return name.length > 6 ? name.slice(0, 6) + '...' : name;
+  };
+
+  // 过滤项目
+  const filteredProjectsList = projects.filter(project => 
+    project.name.toLowerCase().includes(projectSearchQuery.toLowerCase())
+  );
+
+  // 添加文档搜索过滤函数
+  const filteredDocuments = useMemo(() => {
+    if (!searchQuery.trim()) return documents;
+    const query = searchQuery.toLowerCase();
+    return documents.filter(doc => 
+      doc.title.toLowerCase().includes(query) ||
+      doc.content?.toLowerCase().includes(query)
+    );
+  }, [documents, searchQuery]);
+
+  const handleChatClick = (e, chatId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (chatId) {
+      navigate(`/chats/${chatId}`);
+    }
+  };
+
   return (
     <div className="model-info">
       <div className="model-info-header">
@@ -95,68 +202,135 @@ function ModelInfo() {
         ))}
       </div>
 
-      <div className="response-topic">
-        <FiCheckCircle className="icon" />
-        <span>Generated Documents</span>
-      </div>
-
       <div className="documents-section">
         <div className="documents-title">
           <FiFileText className="title-icon" />
-          <h2>AI Documents</h2>
+          <h2>My Documents</h2>
         </div>
 
-        <div className="documents-search">
-          <FiSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search docs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="search-container">
+          <div className="search-input-wrapper">
+            <FiSearch className="search-icon" />
+            <input
+              type="text"
+              className="search-input"
+              placeholder="搜索文档..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
 
         <div className="documents-list">
           {filteredDocuments.map((doc) => (
-            <div key={doc.id} className="document-item">
-              <div className="document-title">
-                {doc.title}
+            <div 
+              key={doc.id} 
+              className="document-item"
+              onClick={() => {
+                setSelectedDoc(doc);
+                setShowPreview(true);
+              }}
+            >
+              <div className="document-header">
+                <div className="document-title-wrapper">
+                  <FiFileText className="document-icon" />
+                  <div className="document-title">
+                    {doc.title}
+                  </div>
+                </div>
+              </div>
+              <div className="document-preview">
+                {doc.content.slice(0, 46)}...
               </div>
               <div className="document-meta">
-                <div className="model-tag">
-                  {doc.model || 'GPT 4'}
-                </div>
-                <div className="interaction-count">
-                  <FiMessageSquare className="meta-icon" />
-                  {doc.message_count || '0'}
+                <div className="document-tags">
+                  <button 
+                    className={`project-tag ${doc.project_id ? 'has-project' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowProjectMenu(showProjectMenu === doc.id ? null : doc.id);
+                    }}
+                  >
+                    <FiFolder className="tag-icon" />
+                    {getProjectName(doc)}
+                  </button>
+                  <div className="doc-type-tag">
+                    {doc.doc_type_name || "Document"}
+                  </div>
+                  <button 
+                    className="chat-count-tag"
+                    onClick={(e) => handleChatClick(e, doc.chat_id)}
+                    title={doc.message_count > 0 ? "查看关联的聊天记录" : "暂无聊天记录"}
+                    disabled={!doc.chat_id || doc.message_count === 0}
+                  >
+                    <FiMessageSquare className="tag-icon" />
+                    <span>{doc.message_count}</span>
+                  </button>
                 </div>
                 <div className="timestamp">
                   {formatTime(doc.created_at)}
                 </div>
-                <button className="more-options">
-                  <FiMoreVertical />
-                </button>
+                {showProjectMenu === doc.id && (
+                  <div className="project-menu-dropdown">
+                    <div className="search-box">
+                      <input
+                        type="text"
+                        placeholder="搜索项目..."
+                        value={projectSearchQuery}
+                        onChange={(e) => setProjectSearchQuery(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        autoFocus
+                      />
+                    </div>
+                    <div className="project-menu-list">
+                      {filteredProjectsList.map(project => (
+                        <button
+                          key={project.id}
+                          className={`project-menu-item ${doc.project_id === project.id ? 'active' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAssignToProject(doc.id, project.id);
+                          }}
+                        >
+                          <FiFolder className="project-icon" />
+                          {project.name}
+                        </button>
+                      ))}
+                    </div>
+                    {doc.project_id && (
+                      <button
+                        className="project-menu-item remove"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveFromProject(doc.id);
+                        }}
+                      >
+                        <FiTrash2 className="project-icon" />
+                        从项目中移除
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}
-          {filteredDocuments.length === 0 && (
-            <div className="no-results">
-              No documents found matching "{searchQuery}"
-            </div>
-          )}
         </div>
       </div>
 
-      <div className="message-group">
-        <div className="message-header">
-          <div className="message-sender-icon">
-            <span className="message-sender-icon-inner"></span>
-          </div>
-          <span className="message-sender">Documentation</span>
-        </div>
-        <div className="message-content">
-        </div>
-      </div>
+      <DocumentPreview 
+        show={showPreview}
+        onClose={() => {
+          setShowPreview(false);
+          setSelectedDoc(null);
+        }}
+        title={selectedDoc?.title}
+        initialContent={selectedDoc?.content}
+        user={user}
+        chatTitle={selectedDoc?.doc_type_name}
+        chatId={selectedDoc?.chat_id}
+        generatePrompt={selectedDoc?.generate_prompt}
+        documentId={selectedDoc?.id}
+      />
     </div>
   );
 }

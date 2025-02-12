@@ -176,7 +176,7 @@
   border-radius: 8px;
   width: 90%;
   max-width: 600px;
-  max-height: 90vh;
+  max-height: 80vh;
   overflow-y: auto;
 }
 
@@ -192,16 +192,54 @@
   font-size: 1rem;
 }
 
+.prompt-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.prompt-icon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+}
+
+.prompt-label label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.prompt-section {
+  margin-bottom: 20px;
+}
+
 .prompt-editor {
   width: 100%;
-  min-height: 200px;
-  padding: 1rem;
+  min-height: 120px;
+  padding: 12px;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
-  margin-bottom: 1.5rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
   resize: vertical;
+  font-size: 10px;
+  line-height: 1.6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #6b7280;
+  background-color: #f3f4f6;
+}
+
+.prompt-editor:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  background-color: #f8fafc;
+  color: #4b5563;
+}
+
+.prompt-editor::placeholder {
+  color: #9ca3af;
+  font-size: 10px;
 }
 
 .modal-actions {

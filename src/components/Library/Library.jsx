@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Library.css';
-import { FiHome, FiBox, FiClipboard, FiBarChart2, FiUsers, FiMap, FiLayers, FiFileText, FiCheckSquare, FiFlag, FiEdit, FiPlus, FiEdit2 } from 'react-icons/fi';
+import { FiHome, FiBox, FiClipboard, FiBarChart2, FiUsers, FiMap, FiLayers, FiFileText, FiCheckSquare, FiFlag, FiEdit, FiPlus, FiEdit2, FiMessageSquare, FiBook } from 'react-icons/fi';
 import { supabase } from '../../lib/supabase';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
@@ -17,8 +17,8 @@ function Library() {
   const documentTypes = [
     {
       id: 1,
-      title: "调研计划",
-      description: "生成包含项目调研对象与目标分析、方法论及关键问题清单的调研计划",
+      title: "调研提纲",
+      description: "生成包含项目调研对象与分析、方法论及关键问题清单的调研计划提纲",
       icon: FiClipboard,
       color: "#3B82F6"
     },
@@ -75,8 +75,22 @@ function Library() {
       id: 9,
       title: "结项报告",
       description: "生成全面的项目结项报告和评估文档",
-      icon: FiCheckSquare,
+      icon: FiEdit,
       color: "#6B7280"
+    },
+    {
+      id: 10,
+      title: "测试用例",
+      description: "生成包含测试场景、步骤和预期结果的详细测试用例文档",
+      icon: FiCheckSquare,
+      color: "#8B5CF6"
+    },
+    {
+      id: 11,
+      title: "项目用户手册",
+      description: "创建包含功能说明、操作指南和常见问题解答的用户手册",
+      icon: FiBook,
+      color: "#F59E0B"
     }
   ];
 
@@ -97,38 +111,55 @@ function Library() {
         const template = data?.find(t => t.type_id === doc.id);
         return {
           ...doc,
-          prompt: template?.prompt || ''
+          chat_prompt: template?.chat_prompt || '',
+          generate_prompt: template?.generate_prompt || ''
         };
       });
 
       setTemplates(mergedTemplates);
     } catch (error) {
       console.error('Error fetching templates:', error);
+      toast.error('加载模板失败，请重试');
     } finally {
       setLoading(false);
     }
   };
 
-  const savePrompt = async (typeId, prompt) => {
+  const savePrompt = async (typeId, chatPrompt, generatePrompt) => {
     try {
+      // 先检查是否已存在记录
+      const { data: existingTemplate, error: checkError } = await supabase
+        .from('document_templates')
+        .select('*')
+        .eq('type_id', typeId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 是"没有找到记录"的错误
+        throw checkError;
+      }
+
+      // 根据是否存在记录决定使用 update 还是 insert
       const { data, error } = await supabase
         .from('document_templates')
-        .upsert({
+        [existingTemplate ? 'update' : 'insert']({
           type_id: typeId,
-          prompt: prompt,
+          chat_prompt: chatPrompt,
+          generate_prompt: generatePrompt,
           title: templates.find(t => t.id === typeId)?.title || '',
           description: templates.find(t => t.id === typeId)?.description || ''
         })
+        .eq(existingTemplate ? 'type_id' : '', typeId) // 如果是更新操作才添加条件
         .select();
 
       if (error) throw error;
 
       setTemplates(templates.map(template => 
-        template.id === typeId ? { ...template, prompt } : template
+        template.id === typeId 
+          ? { ...template, chat_prompt: chatPrompt, generate_prompt: generatePrompt } 
+          : template
       ));
       setEditingTemplate(null);
 
-      // 成功提示
       toast.success('提示词保存成功', {
         duration: 3000,
         position: 'top-center',
@@ -140,8 +171,7 @@ function Library() {
         },
       });
     } catch (error) {
-      console.error('Error saving prompt:', error);
-      // 错误提示
+      console.error('Error saving prompts:', error);
       toast.error('提示词保存失败，请重试', {
         duration: 3000,
         position: 'top-center',
@@ -156,8 +186,8 @@ function Library() {
   };
 
   const handleGenerate = async (doc) => {
-    if (!doc.prompt) {
-      toast.error('请先设置文档提示词模板', {
+    if (!doc.chat_prompt || !doc.generate_prompt) {
+      toast.error('请先设置文档的提示词', {
         duration: 3000,
         position: 'top-center',
         style: {
@@ -177,9 +207,10 @@ function Library() {
         .from('chats')
         .insert([
           {
-            title: `Generate ${doc.title}`,
+            title: doc.title,
             template_id: doc.id,
-            template_prompt: doc.prompt,
+            chat_prompt: doc.chat_prompt,
+            generate_prompt: doc.generate_prompt,
             user_id: user.id
           }
         ])
@@ -272,17 +303,43 @@ function Library() {
       {editingTemplate && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Edit Template Prompt</h2>
+            <h2>Edit Template Prompts</h2>
             <h3>{editingTemplate.title}</h3>
-            <textarea
-              className="prompt-editor"
-              value={editingTemplate.prompt}
-              onChange={(e) => setEditingTemplate({
-                ...editingTemplate,
-                prompt: e.target.value
-              })}
-              placeholder="Enter the prompt template for this document type..."
-            />
+            
+            <div className="prompt-section">
+              <div className="prompt-label">
+                <FiMessageSquare className="prompt-icon" />
+                <label htmlFor="chatPrompt">Chat Prompt</label>
+              </div>
+              <textarea
+                id="chatPrompt"
+                className="prompt-editor"
+                value={editingTemplate.chat_prompt}
+                onChange={(e) => setEditingTemplate({
+                  ...editingTemplate,
+                  chat_prompt: e.target.value
+                })}
+                placeholder="Enter the chat prompt template for this document type..."
+              />
+            </div>
+
+            <div className="prompt-section">
+              <div className="prompt-label">
+                <FiFileText className="prompt-icon" />
+                <label htmlFor="generatePrompt">Generate Prompt</label>
+              </div>
+              <textarea
+                id="generatePrompt"
+                className="prompt-editor"
+                value={editingTemplate.generate_prompt}
+                onChange={(e) => setEditingTemplate({
+                  ...editingTemplate,
+                  generate_prompt: e.target.value
+                })}
+                placeholder="Enter the generate prompt template for this document type..."
+              />
+            </div>
+
             <div className="modal-actions">
               <button 
                 className="cancel-btn"
@@ -292,7 +349,7 @@ function Library() {
               </button>
               <button 
                 className="save-btn"
-                onClick={() => savePrompt(editingTemplate.id, editingTemplate.prompt)}
+                onClick={() => savePrompt(editingTemplate.id, editingTemplate.chat_prompt, editingTemplate.generate_prompt)}
               >
                 Save
               </button>

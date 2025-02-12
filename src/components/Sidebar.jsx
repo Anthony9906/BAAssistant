@@ -211,7 +211,7 @@ function Sidebar() {
             >
               <div className="chat-history-content">
                 <FiMessageCircle className="chat-icon" />
-                <span className="chat-title">{truncateTitle(chat.title)}</span>
+                <span className="chat-title">Generate {truncateTitle(chat.title)}</span>
               </div>
               <span className="message-count">{chat.messageCount}</span>
             </li>

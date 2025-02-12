@@ -442,12 +442,15 @@
     }
 
     .loading-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     /* 确保代码块正确显示 */
@@ -488,4 +491,191 @@
 
     .generate-doc-button:active {
       transform: translateY(0);
+    }
+
+    .preview-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;  /* 添加内边距 */
+    }
+
+    .preview-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 90%;
+      height: 90vh;  /* 改用视口高度 */
+      max-height: 900px;  /* 添加最大高度 */
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      overflow: hidden;  /* 防止内容溢出 */
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e5e7eb;
+      background-color: #fff;
+    }
+
+    .preview-header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .save-doc-button {
+      padding: 8px 16px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .save-doc-button:hover {
+      background-color: #2563eb;
+    }
+
+    .save-doc-button:disabled {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .close-button {
+      padding: 8px;
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+
+    .close-button:hover {
+      background-color: #f3f4f6;
+    }
+
+    .preview-header-small {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      background-color: #fff;
+    }
+
+    .preview-header-small h4 {
+      margin: 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .markdown-preview {
+      padding: 24px;
+      line-height: 1.6;
+      font-size: 16px;
+      color: #374151;
+      overflow-y: auto;
+    }
+
+    .markdown-preview h1,
+    .markdown-preview h2,
+    .markdown-preview h3,
+    .markdown-preview h4,
+    .markdown-preview h5,
+    .markdown-preview h6 {
+      margin-top: 24px;
+      margin-bottom: 16px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .markdown-preview h1 {
+      font-size: 2em;
+    }
+
+    .markdown-preview h2 {
+      font-size: 1.5em;
+    }
+
+    .markdown-preview h3 {
+      font-size: 1.25em;
+    }
+
+    .markdown-preview p {
+      margin: 16px 0;
+    }
+
+    .markdown-preview ul,
+    .markdown-preview ol {
+      padding-left: 2em;
+      margin: 16px 0;
+    }
+
+    .markdown-preview code {
+      background-color: #f3f4f6;
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+
+    .markdown-preview pre {
+      background-color: #f3f4f6;
+      padding: 16px;
+      border-radius: 6px;
+      overflow: auto;
+    }
+
+    .generate-doc-button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .split-view {
+      display: flex;
+      flex: 1;
+      min-height: 0;  /* 重要：允许内容正确滚动 */
+      background-color: #fff;
+    }
+
+    .editor-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #e5e7eb;
+      min-width: 0;  /* 防止内容溢出 */
+    }
+
+    .editor-container {
+      flex: 1;
+      overflow: hidden;  /* 防止编辑器溢出 */
+    }
+
+    .preview-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;  /* 防止内容溢出 */
+    }
+
+    /* 调整 AIEditor 的样式 */
+    .editor-container :global(.aie-editor) {
+      height: 100% !important;
+    }
+
+    .editor-container :global(.aie-content) {
+      height: calc(100% - 40px) !important;  /* 减去工具栏高度 */
     }

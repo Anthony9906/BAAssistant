@@ -20,7 +20,9 @@ function ChatContainer() {
   const [chatAreaWidth, setChatAreaWidth] = useState(0.6);
   const [messages, setMessages] = useState([]);
   const [templatePrompt, setTemplatePrompt] = useState('');
+  const [generatePrompt, setGeneratePrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentChat, setCurrentChat] = useState(null);
   const { chatId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -31,6 +33,8 @@ function ChatContainer() {
     } else {
       setMessages([]);
       setTemplatePrompt('');
+      setGeneratePrompt('');
+      setCurrentChat(null);
     }
   }, [chatId]);
 
@@ -54,8 +58,13 @@ function ChatContainer() {
         throw chatError;
       }
 
-      if (chat.template_prompt) {
-        setTemplatePrompt(chat.template_prompt);
+      setCurrentChat(chat);
+
+      if (chat.chat_prompt) {
+        setTemplatePrompt(chat.chat_prompt);
+      }
+      if (chat.generate_prompt) {
+        setGeneratePrompt(chat.generate_prompt);
       }
 
       const { data: messagesData, error: messagesError } = await supabase
@@ -66,6 +75,18 @@ function ChatContainer() {
         .order('created_at', { ascending: true });
 
       if (messagesError) throw messagesError;
+
+      if (messagesData.length === 0 && chat.chat_prompt) {
+        const systemMessage = {
+          id: 'system-' + Date.now(),
+          role: 'system',
+          content: chat.chat_prompt,
+          chat_id: chatId,
+          user_id: user.id,
+          created_at: new Date().toISOString()
+        };
+        messagesData.unshift(systemMessage);
+      }
 
       const formattedMessages = messagesData.map(msg => ({
         ...msg,
@@ -106,6 +127,8 @@ function ChatContainer() {
           onNewMessage={handleNewMessage}
           isLoading={isLoading}
           templatePrompt={templatePrompt}
+          generatePrompt={generatePrompt}
+          chatTitle={currentChat?.title}
         />
       </div>
       <Resizer onResize={handleResize} />

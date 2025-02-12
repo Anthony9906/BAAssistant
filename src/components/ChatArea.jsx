@@ -2,11 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './ChatArea.css';
-import { FiPaperclip, FiImage, FiMic, FiGrid, FiSend, FiBook, FiUser, FiCopy, FiShare2 } from 'react-icons/fi';
+import { FiPaperclip, FiImage, FiMic, FiGrid, FiSend, FiBook, FiUser, FiCopy, FiShare2, FiX } from 'react-icons/fi';
 import LoadingSpinner from './common/LoadingSpinner';
 import { supabase } from '../lib/supabase';
 import OpenAI from 'openai';
 import { toast } from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import { AiEditor } from "aieditor";
+import "aieditor/dist/style.css";
+import DocumentPreview from './DocumentPreview';
 
 export const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -14,7 +20,14 @@ export const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 
-function ChatArea({ messages: parentMessages, onNewMessage, isLoading: parentLoading, templatePrompt }) {
+function ChatArea({ 
+  messages: parentMessages, 
+  onNewMessage, 
+  isLoading: parentLoading, 
+  templatePrompt,
+  generatePrompt,
+  chatTitle
+}) {
   const { user } = useAuth();
   const { chatId } = useParams();
   const [inputMessage, setInputMessage] = useState('');
@@ -22,6 +35,13 @@ function ChatArea({ messages: parentMessages, onNewMessage, isLoading: parentLoa
   const messagesEndRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [streamingMessage, setStreamingMessage] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const [editorContent, setEditorContent] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const editorRef = useRef(null);
+  const editorInstanceRef = useRef(null);
+  const [previewContent, setPreviewContent] = useState('');
+  const previewRef = useRef(null);
 
   // 添加滚动到底部的函数
   const scrollToBottom = () => {
@@ -53,6 +73,96 @@ function ChatArea({ messages: parentMessages, onNewMessage, isLoading: parentLoa
       scrollToBottom();
     }
   }, [streamingMessage]);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.scrollTop = editorRef.current.scrollHeight;
+    }
+  }, [editorContent]);
+
+  // 更新编辑器内容的方法
+  useEffect(() => {
+    if (editorInstanceRef.current?.editor && editorContent) {
+      try {
+        // 尝试延迟设置内容，确保编辑器已完全初始化
+        setTimeout(() => {
+          if (editorInstanceRef.current?.editor) {
+            editorInstanceRef.current.editor.setContent(editorContent);
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Error setting editor content:', error);
+      }
+    }
+  }, [editorContent]);
+
+  // 初始化编辑器
+  useEffect(() => {
+    if (showPreview && editorRef.current && !editorInstanceRef.current) {
+      try {
+        editorInstanceRef.current = new AiEditor({
+          element: editorRef.current,
+          placeholder: "文档内容将在这里生成...",
+          height: '100%',
+          contentIsMarkdown: true,
+          draggable: true,
+          pasteAsText: false,
+          onChange: () => {
+            if (editorInstanceRef.current) {
+              // 使用 getText 获取纯文本内容
+              const content = editorInstanceRef.current.getText();
+              setPreviewContent(content);
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error initializing editor:', error);
+      }
+    }
+
+    return () => {
+      if (editorInstanceRef.current) {
+        editorInstanceRef.current.destroy();
+        editorInstanceRef.current = null;
+      }
+    };
+  }, [showPreview]);
+
+  // 同步滚动处理
+  useEffect(() => {
+    const editorElement = editorRef.current?.querySelector('.aie-content');  // 获取实际的编辑区域
+    const previewElement = previewRef.current;
+
+    const handleEditorScroll = () => {
+      if (editorElement && previewElement) {
+        const percentage = editorElement.scrollTop / (editorElement.scrollHeight - editorElement.clientHeight);
+        previewElement.scrollTop = percentage * (previewElement.scrollHeight - previewElement.clientHeight);
+      }
+    };
+
+    const handlePreviewScroll = () => {
+      if (editorElement && previewElement) {
+        const percentage = previewElement.scrollTop / (previewElement.scrollHeight - previewElement.clientHeight);
+        editorElement.scrollTop = percentage * (editorElement.scrollHeight - editorElement.clientHeight);
+      }
+    };
+
+    if (editorElement) {
+      editorElement.addEventListener('scroll', handleEditorScroll);
+    }
+    if (previewElement) {
+      previewElement.addEventListener('scroll', handlePreviewScroll);
+    }
+
+    return () => {
+      if (editorElement) {
+        editorElement.removeEventListener('scroll', handleEditorScroll);
+      }
+      if (previewElement) {
+        previewElement.removeEventListener('scroll', handlePreviewScroll);
+      }
+    };
+  }, [showPreview]);
 
   const sendMessage = async (e, content = null) => {
     if (e) e.preventDefault();
@@ -148,13 +258,62 @@ function ChatArea({ messages: parentMessages, onNewMessage, isLoading: parentLoa
     }
   };
 
+  const handleGenerate = async () => {
+    if (!generatePrompt) {
+      toast.error('未设置生成提示词，无法生成文档');
+      return;
+    }
+
+    setIsGenerating(true);
+    setShowPreview(true);
+    setEditorContent(''); // 清空之前的内容
+
+    try {
+      const chatContent = parentMessages
+        .filter(msg => msg.role !== 'system')
+        .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+        .join('\n\n');
+
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: generatePrompt
+          },
+          {
+            role: "user",
+            content: chatContent
+          }
+        ],
+        stream: true,
+      });
+
+      let fullContent = '';
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        fullContent += content;
+        setEditorContent(fullContent); // 更新编辑器内容
+      }
+    } catch (error) {
+      console.error('Error generating document:', error);
+      toast.error('生成文档失败，请重试');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="chat-area">
       {parentLoading && <LoadingSpinner />}
       <div className="chat-header">
         <h2>AI <span style={{fontSize: '12px', color: '#999', marginLeft: '4px', fontWeight: 'normal'}}>gpt-4o</span></h2>
-        <button className="generate-doc-button">
-          <span>Generate</span>
+        <button 
+          className="generate-doc-button"
+          onClick={handleGenerate}
+          disabled={isGenerating}
+        >
+          <span>{isGenerating ? 'Generating...' : 'Generate'}</span>
         </button>
       </div>
 
@@ -249,6 +408,21 @@ function ChatArea({ messages: parentMessages, onNewMessage, isLoading: parentLoa
           </button>
         </div>
       </form>
+
+      <DocumentPreview 
+        show={showPreview}
+        onClose={() => {
+          setShowPreview(false);
+          setEditorContent('');
+        }}
+        title="文档编辑"
+        initialContent={editorContent}
+        isGenerating={isGenerating}
+        generatePrompt={generatePrompt}
+        chatId={chatId}
+        chatTitle={chatTitle}
+        user={user}
+      />
     </div>
   );
 }
