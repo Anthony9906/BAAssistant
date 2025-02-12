@@ -16,7 +16,7 @@ import DocumentPreview from './DocumentPreview';
 
 export const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  baseURL: 'https://api.gptsapi.net/v1',
+  baseURL: import.meta.env.VITE_OPENAI_BASE_URL,
   dangerouslyAllowBrowser: true
 });
 
@@ -216,6 +216,8 @@ function ChatArea({
           }
         ],
         stream: true,
+        max_tokens: 2048,
+        temperature: 0.5
       });
 
       let fullResponse = '';
@@ -287,6 +289,8 @@ function ChatArea({
           }
         ],
         stream: true,
+        max_tokens: 4096,
+        temperature: 0.5
       });
 
       let fullContent = '';
