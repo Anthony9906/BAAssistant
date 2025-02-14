@@ -18,6 +18,7 @@ function ModelInfo() {
   const [projectSearchQuery, setProjectSearchQuery] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
     fetchDocuments();
@@ -27,6 +28,7 @@ function ModelInfo() {
   const fetchDocuments = async () => {
     if (!user) return;
     
+    setIsLoading(true);  // 开始加载
     try {
       const { data, error } = await supabase
         .from('docs_with_message_count')
@@ -39,6 +41,8 @@ function ModelInfo() {
     } catch (error) {
       console.error('Error fetching documents:', error);
       toast.error('获取文档列表失败');
+    } finally {
+      setIsLoading(false);  // 结束加载
     }
   };
 
@@ -171,6 +175,7 @@ function ModelInfo() {
     );
   }, [documents, searchQuery]);
 
+  // 处理聊天记录点击
   const handleChatClick = (e, chatId) => {
     e.preventDefault();
     e.stopPropagation();
@@ -178,6 +183,11 @@ function ModelInfo() {
     if (chatId) {
       navigate(`/chats/${chatId}`);
     }
+  };
+
+  // 添加一个回调函数来处理文档更新
+  const handleDocumentUpdate = async () => {
+    await fetchDocuments(); // 重新获取文档列表
   };
 
   return (
@@ -221,99 +231,109 @@ function ModelInfo() {
           </div>
         </div>
 
-        <div className="documents-list">
-          {filteredDocuments.map((doc) => (
-            <div 
-              key={doc.id} 
-              className="document-item"
-              onClick={() => {
-                setSelectedDoc(doc);
-                setShowPreview(true);
-              }}
-            >
-              <div className="document-header">
-                <div className="document-title-wrapper">
-                  <FiFileText className="document-icon" />
-                  <div className="document-title">
-                    {doc.title}
-                  </div>
-                </div>
-              </div>
-              <div className="document-preview">
-                {doc.content.slice(0, 46)}...
-              </div>
-              <div className="document-meta">
-                <div className="document-tags">
-                  <button 
-                    className={`project-tag ${doc.project_id ? 'has-project' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowProjectMenu(showProjectMenu === doc.id ? null : doc.id);
-                    }}
-                  >
-                    <FiFolder className="tag-icon" />
-                    {getProjectName(doc)}
-                  </button>
-                  <div className="doc-type-tag">
-                    {doc.doc_type_name || "Document"}
-                  </div>
-                  <button 
-                    className="chat-count-tag"
-                    onClick={(e) => handleChatClick(e, doc.chat_id)}
-                    title={doc.message_count > 0 ? "查看关联的聊天记录" : "暂无聊天记录"}
-                    disabled={!doc.chat_id || doc.message_count === 0}
-                  >
-                    <FiMessageSquare className="tag-icon" />
-                    <span>{doc.message_count}</span>
-                  </button>
-                </div>
-                <div className="timestamp">
-                  {formatTime(doc.created_at)}
-                </div>
-                {showProjectMenu === doc.id && (
-                  <div className="project-menu-dropdown">
-                    <div className="search-box">
-                      <input
-                        type="text"
-                        placeholder="搜索项目..."
-                        value={projectSearchQuery}
-                        onChange={(e) => setProjectSearchQuery(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        autoFocus
-                      />
-                    </div>
-                    <div className="project-menu-list">
-                      {filteredProjectsList.map(project => (
-                        <button
-                          key={project.id}
-                          className={`project-menu-item ${doc.project_id === project.id ? 'active' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAssignToProject(doc.id, project.id);
-                          }}
-                        >
-                          <FiFolder className="project-icon" />
-                          {project.name}
-                        </button>
-                      ))}
-                    </div>
-                    {doc.project_id && (
-                      <button
-                        className="project-menu-item remove"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveFromProject(doc.id);
-                        }}
-                      >
-                        <FiTrash2 className="project-icon" />
-                        从项目中移除
-                      </button>
-                    )}
-                  </div>
-                )}
+        <div className="documents-list-container">
+          {isLoading ? (
+            <div className="documents-loading">
+              <div className="loading-spinner-container">
+                <div className="loading-spinner-circle"></div>
               </div>
             </div>
-          ))}
+          ) : (
+            <div className="documents-list">
+              {filteredDocuments.map((doc) => (
+                <div 
+                  key={doc.id} 
+                  className="document-item"
+                  onClick={() => {
+                    setSelectedDoc(doc);
+                    setShowPreview(true);
+                  }}
+                >
+                  <div className="document-header">
+                    <div className="document-title-wrapper">
+                      <FiFileText className="document-icon" />
+                      <div className="document-title">
+                        {doc.title}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="document-preview">
+                    {doc.content.slice(0, 46)}...
+                  </div>
+                  <div className="document-meta">
+                    <div className="document-tags">
+                      <button 
+                        className={`project-tag ${doc.project_id ? 'has-project' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowProjectMenu(showProjectMenu === doc.id ? null : doc.id);
+                        }}
+                      >
+                        <FiFolder className="tag-icon" />
+                        {getProjectName(doc)}
+                      </button>
+                      <div className="doc-type-tag">
+                        {doc.doc_type_name || "Document"}
+                      </div>
+                      <button 
+                        className="chat-count-tag"
+                        onClick={(e) => handleChatClick(e, doc.chat_id)}
+                        title={doc.message_count > 0 ? "查看关联的聊天记录" : "暂无聊天记录"}
+                        disabled={!doc.chat_id || doc.message_count === 0}
+                      >
+                        <FiMessageSquare className="tag-icon" />
+                        <span>{doc.message_count}</span>
+                      </button>
+                    </div>
+                    <div className="timestamp">
+                      {formatTime(doc.created_at)}
+                    </div>
+                    {showProjectMenu === doc.id && (
+                      <div className="project-menu-dropdown">
+                        <div className="search-box">
+                          <input
+                            type="text"
+                            placeholder="搜索项目..."
+                            value={projectSearchQuery}
+                            onChange={(e) => setProjectSearchQuery(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            autoFocus
+                          />
+                        </div>
+                        <div className="project-menu-list">
+                          {filteredProjectsList.map(project => (
+                            <button
+                              key={project.id}
+                              className={`project-menu-item ${doc.project_id === project.id ? 'active' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAssignToProject(doc.id, project.id);
+                              }}
+                            >
+                              <FiFolder className="project-icon" />
+                              {project.name}
+                            </button>
+                          ))}
+                        </div>
+                        {doc.project_id && (
+                          <button
+                            className="project-menu-item remove"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveFromProject(doc.id);
+                            }}
+                          >
+                            <FiTrash2 className="project-icon" />
+                            从项目中移除
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -330,6 +350,7 @@ function ModelInfo() {
         chatId={selectedDoc?.chat_id}
         generatePrompt={selectedDoc?.generate_prompt}
         documentId={selectedDoc?.id}
+        onDocumentUpdate={handleDocumentUpdate}
       />
     </div>
   );

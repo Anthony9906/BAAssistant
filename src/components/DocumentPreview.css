@@ -12,13 +12,14 @@
 }
 
 .preview-content {
+  width: 100%;
+  max-width: 800px;  /* 调整为合适的宽度 */
+  height: 90vh;
   background: white;
-  width: 90%;
-  height: 90%;
   border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .preview-header {
@@ -36,24 +37,32 @@
 }
 
 .save-doc-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 16px;
-  background-color: #3b82f6;
+  background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-size: 14px;
+  transition: all 0.2s;
 }
 
-.save-doc-button:hover {
-  background-color: #2563eb;
+.save-doc-button:hover:not(:disabled) {
+  background-color: #45a049;
 }
 
 .save-doc-button:disabled {
-  background-color: #9ca3af;
+  background-color: #cccccc;
   cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.save-doc-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .close-button {
@@ -78,17 +87,14 @@
   overflow: hidden;
 }
 
-.editor-section,
-.preview-section {
+.editor-section {
   flex: 1;
+  position: relative;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
 .editor-container {
-  flex: 1;
-  overflow: auto;
+  height: 100%;
 }
 
 .preview-section {
@@ -145,13 +151,21 @@
 }
 
 .stream-content {
-  flex: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
   padding: 16px;
-  overflow: auto;
-  background-color: #fafafa;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  line-height: 1.6;
-  color: #374151;
+  scroll-behavior: smooth;
+  white-space: pre-wrap;
+  line-height: 1.2;
+  font-size: 14px;
+}
+
+.stream-content .markdown-content {
+  padding-bottom: 32px;
 }
 
 .stream-content h1,
@@ -160,32 +174,160 @@
 .stream-content h4,
 .stream-content h5,
 .stream-content h6 {
-  margin-top: 24px;
-  margin-bottom: 16px;
-  font-weight: 600;
-  line-height: 1.25;
+  margin-top: 0.2em;
+  margin-bottom: 0.1em;
+  line-height: 1;
 }
 
+.stream-content h1 { font-size: 1.5em; }
+.stream-content h2 { font-size: 1.4em; }
+.stream-content h3 { font-size: 1.2em; }
+.stream-content h4 { font-size: 1.1em; }
+
 .stream-content p {
-  margin: 16px 0;
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
 }
 
 .stream-content ul,
 .stream-content ol {
-  padding-left: 2em;
-  margin: 16px 0;
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+  padding-left: 1.2em;
+}
+
+.stream-content li {
+  margin-bottom: 0.1em;
 }
 
 .stream-content code {
+  padding: 0.1em 0.2em;
   background-color: #f3f4f6;
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
+  border-radius: 2px;
   font-family: monospace;
+  font-size: 0.9em;
 }
 
 .stream-content pre {
+  margin: 0.4em 0;
+  padding: 8px;
   background-color: #f3f4f6;
-  padding: 16px;
-  border-radius: 6px;
+  border-radius: 4px;
   overflow: auto;
+}
+
+.stream-content pre code {
+  padding: 0;
+  background-color: transparent;
+}
+
+.stream-content blockquote {
+  margin: 0.2em 0;
+  padding-left: 0.8em;
+  border-left: 2px solid #e5e7eb;
+  color: #6b7280;
+}
+
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.edit-title-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.edit-title-button:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.title-input {
+  font-size: 18px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  outline: none;
+  width: 300px;
+  transition: all 0.2s ease;
+}
+
+.title-input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+.preview-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.generating-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #6b7280;
+}
+
+.generating-indicator p {
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+/* 确保 Markdown 内容正确显示 */
+.stream-content h1,
+.stream-content h2,
+.stream-content h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.stream-content p {
+  margin-bottom: 1em;
+}
+
+.stream-content ul,
+.stream-content ol {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+.title-edit-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.title-input {
+  flex: 1;
+}
+
+.save-title-button {
+  padding: 4px 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.save-title-button:hover {
+  background-color: #45a049;
 } 

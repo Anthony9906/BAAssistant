@@ -14,25 +14,29 @@ function Login() {
 
   const providers = [
     {
-      name: 'DeepSeek',
-      logo: 'https://cdn.deepseek.com/platform/favicon.png'
-    },
-    {
-      name: 'OpenAI',
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg'
-    },
-    {
-      name: 'Anthropic',
-      logo: 'https://images.seeklogo.com/logo-png/51/2/anthropic-icon-logo-png_seeklogo-515014.png'
-    },
-    {
-      name: 'Meta AI',
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg'
-    },
-    {
-      name: 'xAI',
-      logo: 'https://x.ai/favicon.ico'
-    }
+        name: 'OpenAI',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg'
+      },
+      {
+        name: 'DeepSeek',
+        logo: 'https://cdn.deepseek.com/platform/favicon.png'
+      },
+      {
+        name: 'Anthropic',
+        logo: 'https://images.seeklogo.com/logo-png/51/2/anthropic-icon-logo-png_seeklogo-515014.png'
+      },
+      {
+        name: 'Meta AI',
+        logo: 'https://images.seeklogo.com/logo-png/42/1/meta-icon-new-facebook-2021-logo-png_seeklogo-424014.png?v=1957907069834115656'
+      },
+      {
+        name: 'Gemini AI',
+        logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJeGbkM-VT8QxLK2nGoQ7E2_g3-1xEt6LmtA&s'
+      },
+      {
+        name: 'xAI',
+        logo: 'https://x.ai/favicon.ico'
+      }
   ];
 
   const handleSubmit = async (e) => {

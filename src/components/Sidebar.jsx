@@ -6,6 +6,7 @@ import { FiSettings, FiLogOut, FiSearch, FiMessageSquare, FiBook, FiFileText, Fi
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import UserProfileModal from './UserProfileModal';
+import SettingsModal from './SettingsModal';
 
 function Sidebar() {
   const { user, signOut } = useAuth();
@@ -14,6 +15,7 @@ function Sidebar() {
   const [chatHistory, setChatHistory] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchChatHistory();
@@ -64,7 +66,7 @@ function Sidebar() {
         .select('id, title, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(8);
+        .limit(6);  // 限制只获取最近6条记录
 
       if (chatsError) throw chatsError;
 
@@ -173,16 +175,27 @@ function Sidebar() {
     }
   };
 
+  // 添加格式化时间的函数
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / 1000 / 60);
+    
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
+    } else if (diffInMinutes < 1440) {
+      return `${Math.floor(diffInMinutes / 60)}h ago`;
+    } else {
+      return `${Math.floor(diffInMinutes / 1440)}d ago`;
+    }
+  };
+
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        {/* 保留header结构，移除user-info和sidebar-actions的内容 */}
+        <span className="sidebar-header-text">Ver. 0.1.5</span>
       </div>
-      <div className="search-bar">
-        <FiSearch style={{ color: '#71717a', width: 16, height: 16, marginRight: 8 }} />
-        <input type="text" placeholder="Search for chats..." />
-        <span className="search-shortcut">K</span>
-      </div>
+
       <div className="nav-section">
         <NavLink to="/chats" className="nav-item">
           <FiMessageCircle className="nav-icon" />
@@ -200,8 +213,18 @@ function Sidebar() {
           <FiChevronRight className="nav-arrow" />
         </NavLink>
       </div>
+
       <div className="chat-history-section">
-        <p className="chat-history-header">CHAT HISTORY</p>
+        <div className="chat-history-header">
+          <span>CHAT HISTORY</span>
+        </div>
+        
+        <div className="search-bar">
+          <FiSearch style={{ color: '#71717a', width: 16, height: 16 }} />
+          <input type="text" placeholder="Search chats..." />
+          <span className="search-shortcut">K</span>
+        </div>
+
         <ul className="chat-history-list">
           {chatHistory.map((chat) => (
             <li 
@@ -211,9 +234,12 @@ function Sidebar() {
             >
               <div className="chat-history-content">
                 <FiMessageCircle className="chat-icon" />
-                <span className="chat-title">Generate {truncateTitle(chat.title)}</span>
+                <div className="chat-info">
+                  <span className="chat-title">Generate {truncateTitle(chat.title)}</span>
+                  <span className="chat-history-timestamp">{formatTime(chat.created_at)}</span>
+                </div>
+                <span className="message-count">{chat.messageCount}</span>
               </div>
-              <span className="message-count">{chat.messageCount}</span>
             </li>
           ))}
         </ul>
@@ -225,7 +251,7 @@ function Sidebar() {
             <span className="sidebar-user-avatar">{userProfile?.avatar || '👤'}</span>
             <span>{userProfile?.username || user?.email}</span>
           </button>
-          <button className="menu-item">
+          <button className="menu-item" onClick={() => setIsSettingsModalOpen(true)}>
             <FiSettings className="menu-icon" />
             <span>Settings</span>
           </button>
@@ -244,6 +270,11 @@ function Sidebar() {
           onUpdate={handleProfileUpdate}
         />
       )}
+
+      <SettingsModal 
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+      />
     </div>
   );
 }

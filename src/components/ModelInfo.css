@@ -350,61 +350,25 @@
 }
 
 .model-info-header {
-  padding: 0 0 16px 0;
-}
-
-.header-title {
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.search-wrapper {
-  position: relative;
-}
-
-.doc-search-input {
-  width: 200px;
-  padding: 6px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 13px;
-  outline: none;
-  background-color: #f9fafb;
-  transition: all 0.2s ease;
-}
-
-.doc-search-input:focus {
-  border-color: #60a5fa;
-  background-color: white;
-}
-
-.doc-search-input::placeholder {
-  color: #9ca3af;
-}
-
-.document-content {
-  margin-top: 0;
-}
-
-.documents-list {
-  margin-top: 0;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .model-info-logo {
-  width: 40px;
-  height: 40px;
-  padding: 8px;
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 12px;
-  color: #3b82f6;
+  font-size: 24px;
+  color: #4b5563;
+  flex-shrink: 0;
 }
 
 .model-info-header h2 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #1f2937;
   margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
 }
 
 .model-info-description {
@@ -603,4 +567,47 @@
 
 .chat-count-tag .tag-icon {
   font-size: 11px;
+}
+
+.documents-list-container {
+  position: relative;
+  flex: 1;
+  min-height: 200px;
+}
+
+.documents-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* 复用 LoadingSpinner 的样式 */
+.loading-spinner-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner-circle {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spinner-rotate 1s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

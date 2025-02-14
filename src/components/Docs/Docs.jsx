@@ -277,6 +277,11 @@ function Docs() {
     }
   };
 
+  // 添加一个回调函数来处理文档更新
+  const handleDocumentUpdate = async () => {
+    await fetchDocuments(); // 重新获取文档列表
+  };
+
   return (
     <div className="docs-container">
       {loading && <LoadingSpinner />}
@@ -582,6 +587,7 @@ function Docs() {
         chatId={selectedDoc?.chat_id}
         generatePrompt={selectedDoc?.generate_prompt}
         documentId={selectedDoc?.id}
+        onDocumentUpdate={handleDocumentUpdate}
       />
     </div>
   );

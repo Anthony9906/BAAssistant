@@ -5,13 +5,12 @@
       padding-right: 20px;
       display: flex;
       flex-direction: column;
-      background: white url('/public/images/empty-chat.png') bottom center no-repeat;
-      background-size: cover;
+      background: white;
       position: relative;
       overflow: hidden;
     }
 
-    /* 添加一个遮罩层，让背景图变淡 */
+    /* 保留遮罩层，让背景变淡 */
     .chat-area::after {
       content: '';
       position: absolute;
@@ -35,9 +34,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      flex-shrink: 0;
-      padding: 4px 20px 0 20px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
     }
 
     .chat-header-left {
@@ -48,7 +46,9 @@
 
     .chat-header h2 {
       margin: 0;
-      font-size: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
     }
 
     .generate-doc-btn {
@@ -470,27 +470,28 @@
     }
 
     .generate-doc-button {
-      padding: 6px 16px;
-      background-color: #22c55e;  /* 绿色背景 */
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background-color: #10b981;  /* 改为绿色 */
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
       transition: all 0.2s ease;
     }
 
     .generate-doc-button:hover {
-      background-color: #16a34a;  /* 更深的绿色 */
-      transform: translateY(-1px);
+      background-color: #059669;  /* 深一点的绿色用于悬停效果 */
     }
 
-    .generate-doc-button:active {
-      transform: translateY(0);
+    .generate-doc-button:disabled {
+      background-color: #d1d5db;
+      cursor: not-allowed;
+      opacity: 0.7;
     }
 
     .preview-modal {
@@ -639,11 +640,6 @@
       overflow: auto;
     }
 
-    .generate-doc-button:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
     .split-view {
       display: flex;
       flex: 1;
@@ -678,4 +674,35 @@
 
     .editor-container :global(.aie-content) {
       height: calc(100% - 40px) !important;  /* 减去工具栏高度 */
+    }
+
+    .model-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .model-select {
+      appearance: none;
+      background-color: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 4px 24px 4px 8px;
+      font-size: 12px;
+      color: #374151;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 12px;
+    }
+
+    .model-select:hover {
+      background-color: #e5e7eb;
+    }
+
+    .model-select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
     }

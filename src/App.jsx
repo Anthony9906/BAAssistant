@@ -174,7 +174,7 @@ function AppContent() {
       <Sidebar />
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<Navigate to="/library" replace />} />
+          <Route path="/" element={<Navigate to="/chats" replace />} />
           <Route path="/library" element={<Library />} />
           <Route path="/docs" element={<Docs />} />
           <Route path="/chats/:chatId" element={<ChatContainer />} />

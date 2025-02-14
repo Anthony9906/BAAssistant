@@ -2,14 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './ChatArea.css';
-import { FiPaperclip, FiImage, FiMic, FiGrid, FiSend, FiBook, FiUser, FiCopy, FiShare2, FiX } from 'react-icons/fi';
+import { FiPaperclip, FiImage, FiMic, FiGrid, FiSend, FiUser, FiCopy, FiShare2 } from 'react-icons/fi';
 import LoadingSpinner from './common/LoadingSpinner';
 import { supabase } from '../lib/supabase';
 import OpenAI from 'openai';
 import { toast } from 'react-hot-toast';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
 import { AiEditor } from "aieditor";
 import "aieditor/dist/style.css";
 import DocumentPreview from './DocumentPreview';
@@ -33,15 +30,23 @@ function ChatArea({
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
-  const [messages, setMessages] = useState([]);
   const [streamingMessage, setStreamingMessage] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [editorContent, setEditorContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [availableModels, setAvailableModels] = useState({
+    'deepseek-r1': true,
+    'gpt-4o': true
+  });
+  const [selectedModel, setSelectedModel] = useState(() => {
+    const savedModel = localStorage.getItem('selectedModel');
+    return savedModel || 'deepseek-r1';
+  });
   const editorRef = useRef(null);
   const editorInstanceRef = useRef(null);
-  const [previewContent, setPreviewContent] = useState('');
-  const previewRef = useRef(null);
+
+  // 根据消息和加载状态决定是否显示欢迎图片
+  const showWelcome = parentMessages.length === 0 && !parentLoading && !streamingMessage;
 
   // 添加滚动到底部的函数
   const scrollToBottom = () => {
@@ -74,27 +79,36 @@ function ChatArea({
     }
   }, [streamingMessage]);
 
+  // 获取用户设置的可用模型
   useEffect(() => {
-    if (editorRef.current) {
-      editorRef.current.scrollTop = editorRef.current.scrollHeight;
-    }
-  }, [editorContent]);
-
-  // 更新编辑器内容的方法
-  useEffect(() => {
-    if (editorInstanceRef.current?.editor && editorContent) {
+    const fetchUserSettings = async () => {
       try {
-        // 尝试延迟设置内容，确保编辑器已完全初始化
-        setTimeout(() => {
-          if (editorInstanceRef.current?.editor) {
-            editorInstanceRef.current.editor.setContent(editorContent);
+        const { data, error } = await supabase
+          .from('user_settings')
+          .select('settings')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) throw error;
+
+        if (data?.settings?.models) {
+          setAvailableModels(data.settings.models);
+          // 如果当前选中的模型被禁用，自动切换到第一个可用的模型
+          if (!data.settings.models[selectedModel]) {
+            const firstAvailableModel = Object.entries(data.settings.models)
+              .find(([_, enabled]) => enabled)?.[0];
+            if (firstAvailableModel) {
+              setSelectedModel(firstAvailableModel);
+            }
           }
-        }, 100);
+        }
       } catch (error) {
-        console.error('Error setting editor content:', error);
+        console.error('Error fetching user settings:', error);
       }
-    }
-  }, [editorContent]);
+    };
+
+    fetchUserSettings();
+  }, [user.id]);
 
   // 初始化编辑器
   useEffect(() => {
@@ -106,20 +120,14 @@ function ChatArea({
           height: '100%',
           contentIsMarkdown: true,
           draggable: true,
-          pasteAsText: false,
-          onChange: () => {
-            if (editorInstanceRef.current) {
-              // 使用 getText 获取纯文本内容
-              const content = editorInstanceRef.current.getText();
-              setPreviewContent(content);
-            }
-          }
+          pasteAsText: false
         });
       } catch (error) {
         console.error('Error initializing editor:', error);
       }
     }
 
+    // 清理函数
     return () => {
       if (editorInstanceRef.current) {
         editorInstanceRef.current.destroy();
@@ -128,41 +136,32 @@ function ChatArea({
     };
   }, [showPreview]);
 
-  // 同步滚动处理
-  useEffect(() => {
-    const editorElement = editorRef.current?.querySelector('.aie-content');  // 获取实际的编辑区域
-    const previewElement = previewRef.current;
+  // 添加保存消息到数据库的函数
+  const saveMessageToSupabase = async (message, retryCount = 3) => {
+    for (let i = 0; i < retryCount; i++) {
+      try {
+        const { error } = await supabase
+          .from('messages')
+          .insert([{
+            chat_id: chatId,
+            role: message.role,
+            content: message.content,
+            user_id: user.id
+          }]);
 
-    const handleEditorScroll = () => {
-      if (editorElement && previewElement) {
-        const percentage = editorElement.scrollTop / (editorElement.scrollHeight - editorElement.clientHeight);
-        previewElement.scrollTop = percentage * (previewElement.scrollHeight - previewElement.clientHeight);
+        if (error) throw error;
+        return true; // 保存成功
+      } catch (error) {
+        console.error(`保存消息失败，尝试次数: ${i + 1}`, error);
+        if (i === retryCount - 1) {
+          toast.error('保存消息失败，但对话可以继续');
+          return false;
+        }
+        // 等待一段时间后重试
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
       }
-    };
-
-    const handlePreviewScroll = () => {
-      if (editorElement && previewElement) {
-        const percentage = previewElement.scrollTop / (previewElement.scrollHeight - previewElement.clientHeight);
-        editorElement.scrollTop = percentage * (editorElement.scrollHeight - editorElement.clientHeight);
-      }
-    };
-
-    if (editorElement) {
-      editorElement.addEventListener('scroll', handleEditorScroll);
     }
-    if (previewElement) {
-      previewElement.addEventListener('scroll', handlePreviewScroll);
-    }
-
-    return () => {
-      if (editorElement) {
-        editorElement.removeEventListener('scroll', handleEditorScroll);
-      }
-      if (previewElement) {
-        previewElement.removeEventListener('scroll', handlePreviewScroll);
-      }
-    };
-  }, [showPreview]);
+  };
 
   const sendMessage = async (e, content = null) => {
     if (e) e.preventDefault();
@@ -186,21 +185,12 @@ function ChatArea({
 
       // 保存用户消息到数据库
       if (chatId && !content) {
-        const { error: messageError } = await supabase
-          .from('messages')
-          .insert([{
-            chat_id: chatId,
-            role: 'user',
-            content: messageContent,
-            user_id: user.id
-          }]);
-
-        if (messageError) throw messageError;
+        await saveMessageToSupabase(userMessage);
       }
 
-      // 使用流式API
+      // 使用选中的模型
       const stream = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: selectedModel,
         messages: [
           {
             role: "system",
@@ -216,7 +206,7 @@ function ChatArea({
           }
         ],
         stream: true,
-        max_tokens: 2048,
+        max_tokens: 512,
         temperature: 0.5
       });
 
@@ -228,7 +218,6 @@ function ChatArea({
         setStreamingMessage(prev => prev + content);
       }
 
-      // 流式响应完成后，保存完整消息到数据库
       const assistantMessage = {
         role: 'assistant',
         content: fullResponse,
@@ -237,16 +226,7 @@ function ChatArea({
       };
 
       if (chatId) {
-        const { error: assistantError } = await supabase
-          .from('messages')
-          .insert([{
-            chat_id: chatId,
-            role: 'assistant',
-            content: fullResponse,
-            user_id: user.id
-          }]);
-
-        if (assistantError) throw assistantError;
+        await saveMessageToSupabase(assistantMessage);
       }
 
       onNewMessage(assistantMessage);
@@ -254,15 +234,25 @@ function ChatArea({
 
     } catch (error) {
       console.error('Error:', error);
-      toast.error('Failed to send message. Please try again.');
+      toast.error('发送消息失败，请重试');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGenerate = async () => {
-    if (!generatePrompt) {
-      toast.error('未设置生成提示词，无法生成文档');
+    if (!generatePrompt || !chatId) {
+      toast.success('请打开 Library 选择一种文档类型开始创建', {
+        duration: 3000,
+        position: 'top-center',
+        style: {
+          background: '#10b981',
+          color: '#fff',
+          fontSize: '14px',
+          padding: '16px',
+          borderRadius: '8px'
+        },
+      });
       return;
     }
 
@@ -277,7 +267,7 @@ function ChatArea({
         .join('\n\n');
 
       const stream = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: selectedModel,
         messages: [
           {
             role: "system",
@@ -289,7 +279,7 @@ function ChatArea({
           }
         ],
         stream: true,
-        max_tokens: 4096,
+        max_tokens: 2048,
         temperature: 0.5
       });
 
@@ -297,7 +287,7 @@ function ChatArea({
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
         fullContent += content;
-        setEditorContent(fullContent); // 更新编辑器内容
+        setEditorContent(fullContent);
       }
     } catch (error) {
       console.error('Error generating document:', error);
@@ -307,11 +297,33 @@ function ChatArea({
     }
   };
 
+  // 当模型选择改变时，保存到 localStorage
+  const handleModelChange = (e) => {
+    const newModel = e.target.value;
+    setSelectedModel(newModel);
+    localStorage.setItem('selectedModel', newModel);
+  };
+
   return (
     <div className="chat-area">
       {parentLoading && <LoadingSpinner />}
       <div className="chat-header">
-        <h2>AI <span style={{fontSize: '12px', color: '#999', marginLeft: '4px', fontWeight: 'normal'}}>gpt-4o</span></h2>
+        <div className="model-selector">
+          <h2>AI</h2>
+          <select 
+            value={selectedModel}
+            onChange={handleModelChange}
+            className="model-select"
+          >
+            {Object.entries(availableModels).map(([model, enabled]) => (
+              enabled && (
+                <option key={model} value={model}>
+                  {model === 'deepseek-r1' ? 'DeepSeek R1' : 'GPT-4O'}
+                </option>
+              )
+            ))}
+          </select>
+        </div>
         <button 
           className="generate-doc-button"
           onClick={handleGenerate}
@@ -322,55 +334,79 @@ function ChatArea({
       </div>
 
       <div className="chat-messages">
-        {parentMessages.map((message, index) => (
-          <div key={index} className={`message-group ${message.role === 'assistant' ? 'assistant' : ''}`}>
-            <div className="message-header">
-              {message.role === 'user' ? (
-                <div className="user-avatar">
-                  <FiUser className="avatar-icon" />
-                </div>
-              ) : (
-                <div className="ai-avatar">
-                  <span className="ai-avatar-inner">AI</span>
-                </div>
-              )}
-              <span className="chat-message-sender">
-                {message.role === 'user' ? 'You' : 'AI Assistant'}
-              </span>
-              <span className="message-time">{message.timestamp}</span>
-              {message.role === 'assistant' && (
-                <span className="tokens">{Math.floor(message.content.length / 4)} tokens</span>
-              )}
-              {message.role === 'assistant' && (
-                <div className="message-actions">
-                  <button className="message-action-button" title="Copy to clipboard">
-                    <FiCopy className="action-icon" />
-                  </button>
-                  <button className="message-action-button" title="Share message">
-                    <FiShare2 className="action-icon" />
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="message-content">
-              {message.content}
-            </div>
+        {showWelcome ? (
+          <div className="welcome-container">
+            <img 
+              src="/images/welcome-image.png" 
+              alt="Welcome" 
+              className="welcome-image"
+            />
           </div>
-        ))}
-        {(isLoading || streamingMessage) && (
-          <div className="message-group assistant">
-            <div className="message-content">
-              {streamingMessage || (
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+        ) : (
+          <>
+            {parentMessages.map((message, index) => (
+              <div key={index} className={`message-group ${message.role === 'assistant' ? 'assistant' : ''}`}>
+                <div className="message-header">
+                  {message.role === 'user' ? (
+                    <div className="user-avatar">
+                      <FiUser className="avatar-icon" />
+                    </div>
+                  ) : (
+                    <div className="ai-avatar">
+                      <span className="ai-avatar-inner">AI</span>
+                    </div>
+                  )}
+                  <span className="chat-message-sender">
+                    {message.role === 'user' ? 'You' : 'AI Assistant'}
+                  </span>
+                  <span className="message-time">{message.timestamp}</span>
+                  {message.role === 'assistant' && (
+                    <span className="tokens">{Math.floor(message.content.length / 4)} tokens</span>
+                  )}
+                  {message.role === 'assistant' && (
+                    <div className="message-actions">
+                      <button className="message-action-button" title="Copy to clipboard">
+                        <FiCopy className="action-icon" />
+                      </button>
+                      <button className="message-action-button" title="Share message">
+                        <FiShare2 className="action-icon" />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+                <div className="message-content">
+                  {message.content}
+                </div>
+              </div>
+            ))}
+            {(isLoading || streamingMessage) && (
+              <div className="message-group assistant">
+                <div className="message-header">
+                  <div className="ai-avatar">
+                    <span className="ai-avatar-inner">AI</span>
+                  </div>
+                  <span className="chat-message-sender">AI Assistant</span>
+                  <span className="message-time">
+                    {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  {streamingMessage && (
+                    <span className="tokens">{Math.floor(streamingMessage.length / 4)} tokens</span>
+                  )}
+                </div>
+                <div className="message-content">
+                  {streamingMessage || (
+                    <div className="typing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </>
         )}
-        <div ref={messagesEndRef} style={{ height: '20px' }} />
       </div>
 
       <form onSubmit={sendMessage} className="chat-input">
@@ -390,9 +426,6 @@ function ChatArea({
         />
         <div className="chat-input-footer">
           <div className="chat-input-icons">
-            <button type="button" className="icon-button">
-              <FiBook className="icon" />
-            </button>
             <button type="button" className="icon-button">
               <FiPaperclip className="icon" />
             </button>
