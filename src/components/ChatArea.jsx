@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './ChatArea.css';
-import { FiPaperclip, FiImage, FiMic, FiGrid, FiSend, FiUser, FiCopy, FiShare2 } from 'react-icons/fi';
+import { FiPaperclip, FiImage, FiMic, FiGrid, FiSend, FiUser, FiCopy, FiShare2, FiHelpCircle } from 'react-icons/fi';
 import LoadingSpinner from './common/LoadingSpinner';
 import { supabase } from '../lib/supabase';
 import OpenAI from 'openai';
@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast';
 import { AiEditor } from "aieditor";
 import "aieditor/dist/style.css";
 import DocumentPreview from './DocumentPreview';
+import HelpBot from './HelpBot';
 
 export const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -44,6 +45,7 @@ function ChatArea({
   });
   const editorRef = useRef(null);
   const editorInstanceRef = useRef(null);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   // 根据消息和加载状态决定是否显示欢迎图片
   const showWelcome = parentMessages.length === 0 && !parentLoading && !streamingMessage;
@@ -323,6 +325,13 @@ function ChatArea({
               )
             ))}
           </select>
+          <button 
+            className="help-button"
+            onClick={() => setShowHelpModal(true)}
+            title="App Help"
+          >
+            <FiHelpCircle className="help-icon" />
+          </button>
         </div>
         <button 
           className="generate-doc-button"
@@ -445,6 +454,26 @@ function ChatArea({
           </button>
         </div>
       </form>
+
+      {/* 添加帮助弹窗 */}
+      {showHelpModal && (
+        <div className="help-modal">
+          <div className="help-modal-content">
+            <div className="help-modal-header">
+              <h3>AI Docs Help</h3>
+              <button 
+                className="close-button"
+                onClick={() => setShowHelpModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="help-modal-body">
+              <HelpBot onClose={() => setShowHelpModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
 
       <DocumentPreview 
         show={showPreview}

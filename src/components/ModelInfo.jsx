@@ -190,6 +190,18 @@ function ModelInfo() {
     await fetchDocuments(); // 重新获取文档列表
   };
 
+  // 添加清理文本内容的函数
+  const cleanPreviewContent = (content) => {
+    if (!content) return '';
+    return content
+      .replace(/\[.*?\]/g, '') // 移除 markdown 链接标记
+      .replace(/\(.*?\)/g, '') // 移除 markdown URL
+      .replace(/[#*`~]/g, '') // 移除 markdown 标记符号
+      .replace(/<[^>]*>/g, '') // 移除 HTML 标签
+      .replace(/\s+/g, ' ') // 将多个空白字符替换为单个空格
+      .trim(); // 移除首尾空白
+  };
+
   return (
     <div className="model-info">
       <div className="model-info-header">
@@ -258,7 +270,7 @@ function ModelInfo() {
                     </div>
                   </div>
                   <div className="document-preview">
-                    {doc.content.slice(0, 46)}...
+                    {cleanPreviewContent(doc.content).slice(0, 36)}...
                   </div>
                   <div className="document-meta">
                     <div className="document-tags">

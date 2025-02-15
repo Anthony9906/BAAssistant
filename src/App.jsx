@@ -179,7 +179,7 @@ function AppContent() {
           <Route path="/docs" element={<Docs />} />
           <Route path="/chats/:chatId" element={<ChatContainer />} />
           <Route path="/chats" element={<ChatContainer />} />
-          <Route path="*" element={<Navigate to="/library" />} />
+          <Route path="*" element={<Navigate to="/chats" replace />} />
         </Routes>
       </main>
     </div>

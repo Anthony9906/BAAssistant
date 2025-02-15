@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import './Sidebar.css';
-import { FiSettings, FiLogOut, FiSearch, FiMessageSquare, FiBook, FiFileText, FiUser, FiHome, FiMessageCircle, FiMonitor, FiGrid, FiChevronRight } from 'react-icons/fi';
+import { FiSettings, FiLogOut, FiSearch, FiMessageSquare, FiBook, FiFileText, FiUser, FiHome, FiMessageCircle, FiMonitor, FiGrid, FiChevronRight, FiUsers } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import UserProfileModal from './UserProfileModal';
@@ -193,13 +193,17 @@ function Sidebar() {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <span className="sidebar-header-text">Ver. 0.1.5</span>
       </div>
 
       <div className="nav-section">
         <NavLink to="/chats" className="nav-item">
           <FiMessageCircle className="nav-icon" />
           <span>Chats</span>
+          <FiChevronRight className="nav-arrow" />
+        </NavLink>
+        <NavLink to="/teams" className="nav-item">
+          <FiUsers className="nav-icon" />
+          <span>Teams</span>
           <FiChevronRight className="nav-arrow" />
         </NavLink>
         <NavLink to="/library" className="nav-item">

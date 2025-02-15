@@ -255,7 +255,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
 }
 
 .document-title-wrapper {
@@ -285,9 +284,8 @@
 
 .document-preview {
   font-size: 12px;
-  color: #6b7280;
-  line-height: 1.5;
-  margin-bottom: 8px;
+  color: #949cac;
+  margin: 8px 0;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;

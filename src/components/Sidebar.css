@@ -1,22 +1,124 @@
 .sidebar {
-  width: 240px;
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  background: white;
+  width: 260px;
+  height: 100vh;
+  background-color: #ffffff;
   border-right: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+
+.sidebar-header-text {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* 主菜单导航部分 */
+.nav-section {
   padding: 12px;
+  flex-shrink: 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  color: #374151;
+  text-decoration: none;
+  gap: 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.nav-item:hover {
+  background-color: rgba(59, 130, 246, 0.08);
+  color: #3b82f6;
+  transform: translateX(4px);
+  box-shadow: 
+    0 2px 4px rgba(59, 130, 246, 0.1),
+    0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+.nav-item.active {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  transition: color 0.2s ease;
+}
+
+.nav-item:hover .nav-icon,
+.nav-item.active .nav-icon {
+  color: #3b82f6;
+}
+
+.nav-arrow {
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+  transition: transform 0.2s ease;
+}
+
+.nav-item:hover .nav-arrow {
+  transform: translateX(2px);
+  opacity: 0.7;
+}
+
+/* 聊天历史部分 */
+.chat-history {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* 底部用户信息和设置部分 */
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
+
+/* 搜索框容器 */
+.search-container {
+  margin-bottom: 8px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+}
+
+/* 滚动条样式 */
+.chat-history::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-history::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-history::-webkit-scrollbar-thumb {
+  background-color: #e5e7eb;
+  border-radius: 3px;
+}
+
+.chat-history::-webkit-scrollbar-thumb:hover {
+  background-color: #d1d5db;
 }
 
 .sidebar-header {
   height: 24px;
-  margin-bottom: 4px;
-  flex-shrink: 0;
-}
-
-.nav-section {
-  height: 120px;
-  margin: 10px 0px 24px 0px;
   flex-shrink: 0;
 }
 
@@ -38,7 +140,7 @@
 
 .search-bar {
   height: 32px;
-  margin: 0 0 2px 0;
+  margin: 0 10px 2px 10px;
   padding: 0 12px;
   background: #f3f4f6;
   border-radius: 8px;
@@ -171,156 +273,6 @@
 
 .chat-history-item.active .chat-icon {
   color: #3b82f6;
-}
-
-/* 美化滚动条 */
-.chat-history-list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.chat-history-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.chat-history-list::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 2px;
-}
-
-.chat-history-list::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
-
-.sidebar-footer {
-  height: 48px;
-  flex-shrink: 0;
-  padding-top: 8px;
-  margin-top: 4px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-}
-
-.user-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
-
-.sidebar-actions {
-  display: flex;
-}
-
-.icon {
-  font-size: 20px;
-  margin-left: 10px;
-  cursor: pointer;
-}
-
-.sidebar-nav {
-  margin-bottom: 20px;
-}
-
-.nav-item {
-  height: 36px;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: #52525b;
-  font-size: 15px;
-  width: 100%;
-  text-align: left;
-  position: relative;
-  transition: all 0.2s ease;
-  font-weight: 500;
-}
-
-.nav-arrow {
-  margin-left: auto;
-  width: 16px;
-  height: 16px;
-  color: #9ca3af;
-  opacity: 0.7;
-  transition: all 0.2s ease;
-}
-
-.nav-item:hover {
-  background-color: #f4f4f5;
-  color: #3b82f6;
-  transform: translateX(4px);
-}
-
-.nav-item:hover .nav-arrow {
-  color: #3b82f6;
-  opacity: 1;
-  transform: translateX(2px);
-}
-
-.nav-item.active {
-  background-color: #eff6ff;
-  color: #3b82f6;
-  font-weight: 600;
-}
-
-.nav-item.active .nav-arrow {
-  color: #3b82f6;
-  opacity: 1;
-}
-
-.nav-item:hover .nav-icon {
-  color: #3b82f6;
-}
-
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 16px;
-  background-color: #3b82f6;
-  border-radius: 0 4px 4px 0;
-}
-
-.nav-item.active .nav-icon {
-  color: #3b82f6;
-}
-
-.nav-icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 12px;
-  transition: color 0.2s ease;
-  color: #71717a;
-}
-
-.shortcut-badge {
-  position: absolute;
-  right: 12px;
-  background: #ffffff;
-  border: 1px solid #e4e4e7;
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 12px;
-  color: #71717a;
-  transition: all 0.2s ease;
-}
-
-.nav-item:hover .shortcut-badge,
-.nav-item.active .shortcut-badge {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
 }
 
 .pinned-header,

@@ -282,6 +282,18 @@ function Docs() {
     await fetchDocuments(); // 重新获取文档列表
   };
 
+  // 添加清理文本内容的函数
+  const cleanPreviewContent = (content) => {
+    if (!content) return '';
+    return content
+      .replace(/\[.*?\]/g, '') // 移除 markdown 链接标记
+      .replace(/\(.*?\)/g, '') // 移除 markdown URL
+      .replace(/[#*`~]/g, '') // 移除 markdown 标记符号
+      .replace(/<[^>]*>/g, '') // 移除 HTML 标签
+      .replace(/\s+/g, ' ') // 将多个空白字符替换为单个空格
+      .trim(); // 移除首尾空白
+  };
+
   return (
     <div className="docs-container">
       {loading && <LoadingSpinner />}
@@ -478,7 +490,7 @@ function Docs() {
                   </div>
                 </div>
                 <div className="document-content">
-                  {doc.content?.split('\n')[0]?.slice(0, 100)}...
+                  {cleanPreviewContent(doc.content)?.split('\n')[0]?.slice(0, 150)}...
                 </div>
                 <div className="document-meta">
                   <div className="document-tags">
