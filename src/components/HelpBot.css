@@ -116,6 +116,11 @@
   gap: 8px;
 }
 
+.feature-title span {
+  font-size: 12px;
+  font-weight: 300;
+}
+
 .feature-icon {
   background-color: #eef2ff;
   color: #4f46e5;

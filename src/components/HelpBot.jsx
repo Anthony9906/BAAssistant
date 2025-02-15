@@ -17,7 +17,7 @@ function HelpBot({ onClose }) {
               <div className="feature-icon">
                 <FiMessageSquare />
               </div>
-              <strong>AI 对话</strong>
+              <strong>AI 对话 <span> Chats </span></strong>
             </div>
             <p>支持 AI 进行对话讨论您的项目，包括 DeepSeek R1 和 GPT-4O</p>
           </li>
@@ -26,7 +26,7 @@ function HelpBot({ onClose }) {
               <div className="feature-icon">
                 <FiFileText />
               </div>
-              <strong>文档生成</strong>
+              <strong>文档生成 <span> Library </span></strong>
             </div>
             <p>可以基于对话内容生成文档，支持 Markdown 格式</p>
           </li>
@@ -35,7 +35,7 @@ function HelpBot({ onClose }) {
               <div className="feature-icon">
                 <FiDatabase />
               </div>
-              <strong>文档库</strong>
+              <strong>文档库 <span> Docs </span></strong>
             </div>
             <p>管理和组织生成的所有文档，方便后续查阅和编辑</p>
           </li>
@@ -44,7 +44,7 @@ function HelpBot({ onClose }) {
               <div className="feature-icon">
                 <FiUsers />
               </div>
-              <strong>团队协作</strong>
+              <strong>团队协作 <span> Teams </span></strong>
             </div>
             <p>支持团队成员之间共享和协作处理文档（即将推出）</p>
           </li>
