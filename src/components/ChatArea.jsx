@@ -11,6 +11,7 @@ import { AiEditor } from "aieditor";
 import "aieditor/dist/style.css";
 import DocumentPreview from './DocumentPreview';
 import HelpBot from './HelpBot';
+import { encode } from 'gpt-tokenizer';  // 需要先安装 gpt-tokenizer 包
 
 export const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -198,12 +199,21 @@ function ChatArea({
       
       onNewMessage(userMessage);
 
+      // 添加一个临时的 loading 消息
+      const tempLoadingMessage = {
+        role: 'assistant',
+        content: '{{loading}}',
+        chat_id: chatId,
+        id: Date.now(), // 确保有唯一的 ID
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      onNewMessage(tempLoadingMessage);
+
       // 保存用户消息到数据库
       if (chatId && !content) {
         await saveMessageToSupabase(userMessage);
       }
 
-      // 使用选中的模型
       const stream = await openai.chat.completions.create({
         model: selectedModel,
         messages: [
@@ -221,7 +231,7 @@ function ChatArea({
           }
         ],
         stream: true,
-        max_tokens: 512,
+        max_tokens: 1024,
         temperature: 0.5
       });
 
@@ -230,21 +240,29 @@ function ChatArea({
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
         fullResponse += content;
-        setStreamingMessage(prev => prev + content);
+        
+        // 使用相同的 ID 更新消息内容
+        onNewMessage({
+          role: 'assistant',
+          content: fullResponse,
+          chat_id: chatId,
+          id: tempLoadingMessage.id,  // 使用相同的 ID
+          timestamp: tempLoadingMessage.timestamp,
+          replaceId: tempLoadingMessage.id  // 指定要替换的消息 ID
+        });
       }
 
-      const assistantMessage = {
-        role: 'assistant',
-        content: fullResponse,
-        chat_id: chatId,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-
+      // 保存最终消息到数据库
       if (chatId) {
-        await saveMessageToSupabase(assistantMessage);
+        await saveMessageToSupabase({
+          role: 'assistant',
+          content: fullResponse,
+          chat_id: chatId,
+          model: selectedModel,
+          created_at: new Date().toISOString()
+        });
       }
-
-      onNewMessage(assistantMessage);
+      
       setStreamingMessage('');
 
     } catch (error) {
@@ -294,7 +312,7 @@ function ChatArea({
           }
         ],
         stream: true,
-        max_tokens: 2048,
+        max_tokens: 4096,
         temperature: 0.5
       });
 
@@ -456,7 +474,7 @@ function ChatArea({
         messages: [
           {
             role: "system",
-            content: templatePrompt || "你是一名资深的项目管理专家..."
+            content: templatePrompt || "你是一名资深的项目管理专家，你对企业管理有深入的了解，同时具有丰富的数字化项目实践经验，擅长于帮助企业解决数字化转型问题，也擅长编写各类项目文档，能够为用户提供这些方面的专业咨询与建议"
           },
           ...previousMessages.map(msg => ({
             role: msg.role,
@@ -464,7 +482,7 @@ function ChatArea({
           }))
         ],
         stream: true,
-        max_tokens: 512,
+        max_tokens: 1024,
         temperature: 0.5
       });
 
@@ -513,6 +531,18 @@ function ChatArea({
     } finally {
       setIsLoading(false);
       setStreamingMessage('');
+    }
+  };
+
+  const calculateTokens = (content, model) => {
+    try {
+      // 使用 gpt-tokenizer 计算 tokens
+      const tokens = encode(content);
+      return tokens.length;
+    } catch (error) {
+      console.error('Error calculating tokens:', error);
+      // 如果计算失败，返回一个估算值
+      return Math.floor(content.length / 4);
     }
   };
 
@@ -588,7 +618,7 @@ function ChatArea({
                       title={MODEL_DISPLAY_NAMES[message.model] || message.model}
                       data-tooltip={MODEL_DISPLAY_NAMES[message.model] || message.model}
                     >
-                      {Math.floor(message.content.length / 4)} tokens
+                      {calculateTokens(message.content, message.model)} tokens
                     </span>
                   )}
                   {message.role === 'assistant' && (
