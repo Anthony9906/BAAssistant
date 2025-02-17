@@ -2,7 +2,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
   width: 100%;
   position: relative;
   background: linear-gradient(145deg, #7a41f5 0%, #6db0ff 100%);
@@ -20,7 +19,7 @@
     rgba(255, 255, 255, 0.25) 0%,    /* 增加起始透明度 */
     rgba(255, 255, 255, 0.15) 20%,   /* 增加中间透明度 */
     rgba(255, 255, 255, 0.1) 30%,    /* 增加过渡透明度 */
-    transparent 70%);
+    transparent 50%);
   top: -25%;
   left: -25%;
   animation: rotate 20s linear infinite;
@@ -63,16 +62,22 @@
   flex: 1;
   color: white;
   max-width: 450px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 28px 32px;
-  border-radius: 20px;
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
+  background: linear-gradient(135deg, #4f559fc2 10%, #6d4aa278 80%);
+  padding: 2rem;
+  border-radius: 16px;
   overflow: hidden;
+  isolation: isolate;
+}
+
+.product-info h3 {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.model-description-login {
+  font-size: 12px;
+  font-weight: 300;
+  opacity: 0.6;
 }
 
 .model-header {
@@ -83,12 +88,12 @@
 }
 
 .model-logo {
-  width: 48px;
-  height: 48px;
+  width: 58px !important;
+  height: 58px !important;
   color: white;
   padding: 10px;
   background: rgba(255, 255, 255, 0.25);
-  border-radius: 14px;
+  border-radius: 14px !important;
   box-shadow: 
     0 4px 12px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.2);
@@ -100,9 +105,9 @@
 }
 
 .model-header h2 {
-  font-size: 32px;
+  font-size: 36px !important;
   font-weight: 700;
-  margin: 0;
+  margin: 20px 0 !important;
   color: white;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   line-height: 1.2;
@@ -125,6 +130,7 @@
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
+  margin-top: 20px;
 }
 
 .login-provider-logo {
@@ -160,21 +166,6 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-/* 为产品信息卡片添加光晕效果 */
-.product-info::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.3),
-    rgba(255, 255, 255, 0.1)
-  );
-  border-radius: 24px;
-  pointer-events: none;
-  opacity: 0.5;
 }
 
 .auth-card h2 {
@@ -386,4 +377,25 @@
 /* 确保所有元素使用 border-box */
 * {
   box-sizing: border-box;
+}
+
+/* 动画定义 */
+@keyframes shine {
+  from {
+    transform: translateY(200%) rotate(45deg);
+  }
+  to {
+    transform: translateY(-200%) rotate(45deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.7;
+  }
 }

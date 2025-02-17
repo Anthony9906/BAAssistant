@@ -109,7 +109,7 @@ function DocumentPreview({
               height: '100%',
               markdown: true,
               contentIsMarkdown: true,
-              draggable: true,
+              draggable: false,
               pasteAsText: false,
               ai: {
                 models: {

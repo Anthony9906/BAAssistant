@@ -19,7 +19,7 @@ function HelpBot({ onClose }) {
               </div>
               <strong>AI 对话 <span> Chats </span></strong>
             </div>
-            <p>支持 AI 进行对话讨论您的项目，包括 DeepSeek R1 和 GPT-4O</p>
+            <p>以对话的方式与 AI 一起分析你的项目，让 AI 更深入的理解并提供建议</p>
           </li>
           <li>
             <div className="feature-title">
@@ -28,7 +28,7 @@ function HelpBot({ onClose }) {
               </div>
               <strong>文档生成 <span> Library </span></strong>
             </div>
-            <p>可以基于对话内容生成文档，支持 Markdown 格式</p>
+            <p>让 AI 分析总结对话并生成文档，支持多种项目文档类型</p>
           </li>
           <li>
             <div className="feature-title">
@@ -37,7 +37,7 @@ function HelpBot({ onClose }) {
               </div>
               <strong>文档库 <span> Docs </span></strong>
             </div>
-            <p>管理和组织生成的所有文档，方便后续查阅和编辑</p>
+            <p>管理和组织生成的所有文档，并按项目分类管理，方便查阅和编辑</p>
           </li>
           <li>
             <div className="feature-title">

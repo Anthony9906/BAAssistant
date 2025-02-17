@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './Auth.css';
+import { toast } from 'react-hot-toast';
 
 function SignUp() {
   const [email, setEmail] = useState('');
@@ -23,6 +24,21 @@ function SignUp() {
       setError('');
       setLoading(true);
       await signUp(email, password);
+      
+      toast.success('注册成功，请检查您的邮件完成用户认证', {
+        duration: 5000,
+        position: 'top-center',
+        style: {
+          background: '#10b981',
+          color: '#fff',
+          fontSize: '14px',
+          padding: '16px',
+          borderRadius: '8px',
+          maxWidth: '400px',
+          textAlign: 'center'
+        },
+      });
+      
       navigate('/');
     } catch (error) {
       setError(error.message);

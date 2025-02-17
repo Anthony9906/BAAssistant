@@ -13,6 +13,14 @@ const MODEL_INFO = {
   'gpt-4o': {
     name: 'GPT-4O',
     description: 'Excels at natural language and complex reasoning tasks'
+  },
+  'o3-mini': {
+    name: 'O3 Mini',
+    description: 'Fast and efficient for general tasks and quick responses'
+  },
+  'claude-3-5-sonnet-20241022': {
+    name: 'Claude 3.5 Sonnet',
+    description: 'Balanced performance in analysis, writing and coding tasks'
   }
 };
 
@@ -21,7 +29,9 @@ function SettingsModal({ isOpen, onClose }) {
   const [settings, setSettings] = useState({
     models: {
       'deepseek-r1': true,
-      'gpt-4o': true
+      'gpt-4o': true,
+      'o3-mini': true,
+      'claude-3-5-sonnet-20241022': true
     }
   });
 
@@ -115,7 +125,7 @@ function SettingsModal({ isOpen, onClose }) {
                     <input
                       type="checkbox"
                       role="switch"
-                      checked={settings.models[modelId]}
+                      checked={settings.models[modelId] ?? false}
                       onChange={() => handleModelToggle(modelId)}
                     />
                   </label>

@@ -26,17 +26,62 @@ function ChatContainer() {
   const { chatId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [selectedModel, setSelectedModel] = useState(() => {
+    return localStorage.getItem('selectedModel') || 'gpt-4o';
+  });
   
   useEffect(() => {
     if (chatId) {
       fetchChatData();
     } else {
+      // 清空当前状态
       setMessages([]);
       setTemplatePrompt('');
       setGeneratePrompt('');
       setCurrentChat(null);
     }
-  }, [chatId]);
+  }, [chatId]); // 只依赖 chatId
+
+  // 单独处理 messages 的保存
+  useEffect(() => {
+    // 只在没有 chatId 且有消息时保存
+    if (!chatId && messages.length > 0) {
+      const saveFreetalks = async () => {
+        try {
+          const newMessages = messages.map(msg => ({
+            user_id: user.id,
+            role: msg.role,
+            content: msg.content,
+            created_at: msg.created_at || new Date().toISOString(),
+            model: msg.model || selectedModel,
+            timestamp: new Date(msg.created_at || new Date()).toLocaleTimeString([], { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })
+          }));
+
+          const { error: insertError } = await supabase
+            .from('freetalks')
+            .upsert(newMessages, {
+              onConflict: 'user_id,created_at',
+              returning: true
+            });
+
+          if (insertError) throw insertError;
+        } catch (error) {
+          console.error('Error saving freetalks:', error);
+          toast.error('保存对话记录失败');
+        }
+      };
+
+      // 使用防抖来避免频繁保存
+      const timeoutId = setTimeout(() => {
+        saveFreetalks();
+      }, 1000); // 1秒后执行保存
+
+      return () => clearTimeout(timeoutId); // 清理定时器
+    }
+  }, [chatId, messages, user?.id, selectedModel]); // 添加必要的依赖项
 
   const fetchChatData = async () => {
     setIsLoading(true);
@@ -65,6 +110,10 @@ function ChatContainer() {
       }
       if (chat.generate_prompt) {
         setGeneratePrompt(chat.generate_prompt);
+      }
+
+      if (chat.model) {
+        setSelectedModel(chat.model);
       }
 
       const { data: messagesData, error: messagesError } = await supabase
@@ -109,14 +158,27 @@ function ChatContainer() {
 
   const handleNewMessage = (message) => {
     if (message.replaceId) {
-      // 如果是替换消息，找到并替换临时消息
       setMessages(prev => prev.map(msg => 
-        msg.id === message.replaceId ? message : msg
+        msg.id === message.replaceId ? {
+          ...message,
+          created_at: new Date().toISOString(),
+          model: selectedModel,
+          user_id: user.id
+        } : msg
       ));
     } else {
-      // 如果是新消息，直接添加
-      setMessages(prev => [...prev, message]);
+      setMessages(prev => [...prev, {
+        ...message,
+        created_at: new Date().toISOString(),
+        model: selectedModel,
+        user_id: user.id
+      }]);
     }
+  };
+
+  const handleModelChange = (newModel) => {
+    setSelectedModel(newModel);
+    localStorage.setItem('selectedModel', newModel);
   };
 
   return (
@@ -129,6 +191,8 @@ function ChatContainer() {
           templatePrompt={templatePrompt}
           generatePrompt={generatePrompt}
           chatTitle={currentChat?.title}
+          selectedModel={selectedModel}
+          onModelChange={handleModelChange}
         />
       </div>
       <Resizer onResize={handleResize} />

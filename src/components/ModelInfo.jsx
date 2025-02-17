@@ -250,6 +250,34 @@ function ModelInfo() {
                 <div className="loading-spinner-circle"></div>
               </div>
             </div>
+          ) : filteredDocuments.length === 0 ? (
+            <div className="empty-documents">
+              <div className="empty-documents-content">
+                <div className="empty-icon-wrapper">
+                  <FiFileText className="empty-icon" />
+
+                  <h3>AI还没有为你生成任何文档</h3>
+                  <ul className="empty-documents-steps">
+                    <li>
+                      <span className="step-number">1</span>
+                      使用 Library 文档库创建对话
+                    </li>
+                    <li>
+                      <span className="step-number">2</span>
+                      通过话题讨论，让 AI 帮你分析项目
+                    </li>
+                    <li>
+                      <span className="step-number">3</span>
+                      让 AI 总结你们的讨论生成文档
+                    </li>
+                    <li>
+                      <span className="step-number">4</span>
+                      你可以尝试使用不同 LLM 生成
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="documents-list">
               {filteredDocuments.map((doc) => (

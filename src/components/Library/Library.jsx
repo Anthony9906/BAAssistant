@@ -202,6 +202,9 @@ function Library() {
     }
 
     try {
+      // 从 localStorage 获取当前模型，默认值改为 'gpt-4o'
+      const currentModel = localStorage.getItem('selectedModel') || 'gpt-4o';
+
       // 创建新的 chat
       const { data: chat, error } = await supabase
         .from('chats')
@@ -219,7 +222,7 @@ function Library() {
 
       if (error) throw error;
 
-      // 只创建一条初始消息
+      // 使用 localStorage 中的模型创建初始消息
       const { error: messageError } = await supabase
         .from('messages')
         .insert([
@@ -227,13 +230,13 @@ function Library() {
             chat_id: chat.id,
             role: 'user',
             content: '可以帮助我一起讨论分析我的项目吗？',
-            user_id: user.id
+            user_id: user.id,
+            model: currentModel
           }
         ]);
 
       if (messageError) throw messageError;
 
-      // 导航到新创建的 chat
       navigate(`/chats/${chat.id}`);
     } catch (error) {
       console.error('Error creating chat:', error);

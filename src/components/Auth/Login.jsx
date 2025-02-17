@@ -57,10 +57,12 @@ function Login() {
     <div className="auth-container">
       <div className="auth-content">
         <div className="product-info">
+          <div className="glow-effect"></div>
           <div className="model-header">
             <LuFeather className="model-logo" />
-            <h2>LLM Project Docs Generator</h2>
+            <h2>AI Docs</h2>
           </div>
+          <h3>LLM Project Docs Generator</h3>
           <p className="model-description-login">
             A powerful AI-driven documentation generator that helps you create,
             maintain, and organize project documentation with advanced LLM capabilities.

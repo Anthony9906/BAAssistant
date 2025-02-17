@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import './Sidebar.css';
-import { FiSettings, FiLogOut, FiSearch, FiMessageSquare, FiBook, FiFileText, FiUser, FiHome, FiMessageCircle, FiMonitor, FiGrid, FiChevronRight, FiUsers } from 'react-icons/fi';
+import { FiSettings, FiLogOut, FiSearch, FiMessageSquare, FiBook, FiFileText, FiUser, FiHome, FiMessageCircle, FiMonitor, FiGrid, FiChevronRight, FiUsers, FiBookOpen } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import UserProfileModal from './UserProfileModal';
@@ -101,13 +101,43 @@ function Sidebar() {
         .eq('user_id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // 使用 upsert 而不是 insert，这样如果记录已存在就会更新
+          const { data: newProfile, error: upsertError } = await supabase
+            .from('profiles')
+            .upsert([
+              {
+                user_id: user.id,
+                username: user.email?.split('@')[0] || 'User',
+                avatar: '👤',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+            ], {
+              onConflict: 'user_id',  // 指定冲突时的处理字段
+              returning: 'representation'  // 返回更新后的记录
+            })
+            .select()
+            .single();
 
-      if (data) {
+          if (upsertError) {
+            throw upsertError;
+          }
+
+          setUserProfile(newProfile);
+        } else {
+          throw error;
+        }
+      } else {
         setUserProfile(data);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      setUserProfile({
+        username: user.email?.split('@')[0] || 'User',
+        avatar: '👤'
+      });
     }
   };
 
@@ -207,12 +237,12 @@ function Sidebar() {
           <FiChevronRight className="nav-arrow" />
         </NavLink>
         <NavLink to="/library" className="nav-item">
-          <FiMonitor className="nav-icon" />
+          <FiBookOpen className="nav-icon" />
           <span>Library</span>
           <FiChevronRight className="nav-arrow" />
         </NavLink>
         <NavLink to="/docs" className="nav-item">
-          <FiGrid className="nav-icon" />
+          <FiFileText className="nav-icon" />
           <span>Docs</span>
           <FiChevronRight className="nav-arrow" />
         </NavLink>
@@ -229,24 +259,34 @@ function Sidebar() {
           <span className="search-shortcut">K</span>
         </div>
 
-        <ul className="chat-history-list">
-          {chatHistory.map((chat) => (
-            <li 
-              key={chat.id}
-              className={`chat-history-item ${location.pathname === `/chats/${chat.id}` ? 'active' : ''}`}
-              onClick={() => navigate(`/chats/${chat.id}`)}
-            >
-              <div className="chat-history-content">
-                <FiMessageCircle className="chat-icon" />
-                <div className="chat-info">
-                  <span className="chat-title">Generate {truncateTitle(chat.title)}</span>
-                  <span className="chat-history-timestamp">{formatTime(chat.created_at)}</span>
+        {chatHistory.length > 0 ? (
+          <ul className="chat-history-list">
+            {chatHistory.map((chat) => (
+              <li 
+                key={chat.id}
+                className={`chat-history-item ${location.pathname === `/chats/${chat.id}` ? 'active' : ''}`}
+                onClick={() => navigate(`/chats/${chat.id}`)}
+              >
+                <div className="chat-history-content">
+                  <FiMessageCircle className="chat-icon" />
+                  <div className="chat-info">
+                    <span className="chat-title">Generate {truncateTitle(chat.title)}</span>
+                    <span className="chat-history-timestamp">{formatTime(chat.created_at)}</span>
+                  </div>
+                  <span className="message-count">{chat.messageCount}</span>
                 </div>
-                <span className="message-count">{chat.messageCount}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="empty-history">
+            <div className="empty-history-content">
+              <FiMessageCircle className="empty-icon" />
+              <h3>开始您的第一次对话</h3>
+              <p>打开 <NavLink to="/library" className="library-link">Library</NavLink> 选择一种文档类型，开始与 AI 进行对话</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="sidebar-footer">
