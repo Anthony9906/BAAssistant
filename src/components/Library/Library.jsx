@@ -206,34 +206,31 @@ function Library() {
       const currentModel = localStorage.getItem('selectedModel') || 'openai/gpt-4o-mini';
 
       // 创建新的 chat
-      const { data: chat, error } = await supabase
+      const { data: chat, error: chatError } = await supabase
         .from('chats')
-        .insert([
-          {
-            title: doc.title,
-            template_id: doc.id,
-            chat_prompt: doc.chat_prompt,
-            generate_prompt: doc.generate_prompt,
-            user_id: user.id
-          }
-        ])
+        .insert([{
+          title: doc.title,
+          template_id: doc.id,
+          chat_prompt: doc.chat_prompt,
+          generate_prompt: doc.generate_prompt,
+          user_id: user.id
+        }])
         .select()
         .single();
 
-      if (error) throw error;
+      if (chatError) throw chatError;
 
-      // 使用 localStorage 中的模型创建初始消息
+      // 创建初始消息时设置 auto_replied 为 true
       const { error: messageError } = await supabase
         .from('messages')
-        .insert([
-          {
-            chat_id: chat.id,
-            role: 'user',
-            content: '可以帮助我一起讨论分析我的项目吗？',
-            user_id: user.id,
-            model: currentModel
-          }
-        ]);
+        .insert([{
+          chat_id: chat.id,
+          role: 'user',
+          content: '可以帮助我一起讨论分析我的项目吗？',
+          user_id: user.id,
+          model: currentModel,
+          auto_replied: true  // 设置标记
+        }]);
 
       if (messageError) throw messageError;
 

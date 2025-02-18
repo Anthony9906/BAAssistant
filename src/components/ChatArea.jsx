@@ -73,6 +73,7 @@ function ChatArea({
   const editorInstanceRef = useRef(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const { openai, loading: openaiLoading } = useOpenAI();
+  const processedMessageRef = useRef(null);
 
   // 根据消息和加载状态决定是否显示欢迎图片
   const showWelcome = parentMessages.length === 0 && !parentLoading && !streamingMessage;
@@ -93,11 +94,80 @@ function ChatArea({
   }, [parentMessages, parentLoading]);
 
   useEffect(() => {
-    // 如果有初始消息且没有 AI 回复，发送 AI 请求
     if (parentMessages?.length === 1 && 
         parentMessages[0].role === 'user' && 
-        !parentMessages.some(msg => msg.role === 'assistant')) {
-      sendMessage(null, parentMessages[0].content);
+        !parentMessages.some(msg => msg.role === 'assistant') &&
+        processedMessageRef.current !== parentMessages[0].id) {  // 检查是否处理过这条消息
+      
+      // 记录当前正在处理的消息 ID
+      processedMessageRef.current = parentMessages[0].id;
+      
+      const loadingId = Date.now();
+      const tempLoadingMessage = {
+        role: 'assistant',
+        content: '{{loading}}',
+        chat_id: chatId,
+        id: loadingId,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      onNewMessage(tempLoadingMessage);
+
+      (async () => {
+        try {
+          const stream = await openai.chat.completions.create({
+            model: selectedModel,
+            messages: [
+              {
+                role: "system",
+                content: templatePrompt || "你是一名资深的项目管理专家，你也对企业管理有深入的了解，同时具有丰富的数字化项目实践经验，擅长为企业提供数字化项目咨询与建议"
+              },
+              ...parentMessages.map(msg => ({
+                role: msg.role,
+                content: msg.content
+              }))
+            ],
+            stream: true,
+            max_tokens: 1024,
+            temperature: 0.5
+          });
+
+          let fullResponse = '';
+          for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content || '';
+            fullResponse += content;
+            
+            onNewMessage({
+              role: 'assistant',
+              content: fullResponse,
+              chat_id: chatId,
+              id: loadingId,
+              timestamp: tempLoadingMessage.timestamp,
+              replaceId: loadingId
+            });
+          }
+
+          if (chatId) {
+            await saveMessageToSupabase({
+              role: 'assistant',
+              content: fullResponse,
+              chat_id: chatId,
+              model: selectedModel,
+              created_at: new Date().toISOString()
+            });
+          }
+        } catch (error) {
+          console.error('Error in initial message:', error);
+          toast.error('发送消息失败，请重试');
+          onNewMessage({
+            role: 'assistant',
+            content: '发送失败，请重试',
+            chat_id: chatId,
+            id: loadingId,
+            timestamp: tempLoadingMessage.timestamp,
+            replaceId: loadingId
+          });
+        }
+      })();
     }
   }, [parentMessages]);
 
@@ -243,37 +313,44 @@ function ChatArea({
     setStreamingMessage('');
 
     try {
-      // 立即添加用户消息到界面
-      const userMessage = {
-        role: 'user',
-        content: messageContent,
-        chat_id: chatId,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      onNewMessage(userMessage);
-
-      // 添加一个临时的 loading 消息
+      // 使用数字类型的临时 ID
       const tempLoadingMessage = {
         role: 'assistant',
         content: '{{loading}}',
         chat_id: chatId,
-        id: Date.now(), // 确保有唯一的 ID
+        id: Date.now(),  // 直接使用时间戳作为数字 ID
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       onNewMessage(tempLoadingMessage);
 
-      // 保存用户消息到数据库
-      if (chatId && !content) {
-        await saveMessageToSupabase(userMessage);
+      // 如果是手动发送的消息，才添加用户消息到界面
+      if (!content) {
+        const userMessage = {
+          role: 'user',
+          content: messageContent,
+          chat_id: chatId,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        onNewMessage(userMessage);
       }
 
+      // 保存用户消息到数据库
+      if (chatId && !content) {
+        await saveMessageToSupabase({
+          role: 'user',
+          content: messageContent,
+          chat_id: chatId
+        });
+      }
+
+      let fullResponse = '';
+      
       const stream = await openai.chat.completions.create({
         model: selectedModel,
         messages: [
           {
             role: "system",
-            content: templatePrompt || "你是一名资深的项目管理专家，你对企业管理有深入的了解，同时具有丰富的数字化项目实践经验，擅长于帮助企业解决数字化转型问题，也擅长编写各类项目文档，能够为用户提供这些方面的专业咨询与建议"
+            content: templatePrompt || "你是一名资深的项目管理专家，你对企业管理有深入的了解，同时具有丰富的数字化项目实践经验，擅长为企业提供数字化项目咨询与建议"
           },
           ...parentMessages.map(msg => ({
             role: msg.role,
@@ -289,8 +366,6 @@ function ChatArea({
         temperature: 0.5
       });
 
-      let fullResponse = '';
-      
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
         fullResponse += content;
@@ -300,13 +375,13 @@ function ChatArea({
           role: 'assistant',
           content: fullResponse,
           chat_id: chatId,
-          id: tempLoadingMessage.id,  // 使用相同的 ID
+          id: tempLoadingMessage.id,
           timestamp: tempLoadingMessage.timestamp,
-          replaceId: tempLoadingMessage.id  // 指定要替换的消息 ID
+          replaceId: tempLoadingMessage.id
         });
       }
 
-      // 保存最终消息到数据库
+      // 保存最终的 AI 响应到数据库
       if (chatId) {
         await saveMessageToSupabase({
           role: 'assistant',
@@ -528,7 +603,7 @@ function ChatArea({
         messages: [
           {
             role: "system",
-            content: templatePrompt || "你是一名资深的项目管理专家，你对企业管理有深入的了解，同时具有丰富的数字化项目实践经验，擅长于帮助企业解决数字化转型问题，也擅长编写各类项目文档，能够为用户提供这些方面的专业咨询与建议"
+            content: templatePrompt || "你是一名资深的项目管理专家，你对企业管理有深入的了解，同时具有丰富的数字化项目实践经验，擅长为企业提供数字化项目咨询与建议"
           },
           ...previousMessages.map(msg => ({
             role: msg.role,

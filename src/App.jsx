@@ -163,23 +163,14 @@ function ChatContainer() {
   };
 
   const handleNewMessage = (message) => {
-    if (message.replaceId) {
-      setMessages(prev => prev.map(msg => 
-        msg.id === message.replaceId ? {
-          ...message,
-          created_at: new Date().toISOString(),
-          model: selectedModel,
-          user_id: user.id
-        } : msg
-      ));
-    } else {
-      setMessages(prev => [...prev, {
-        ...message,
-        created_at: new Date().toISOString(),
-        model: selectedModel,
-        user_id: user.id
-      }]);
-    }
+    setMessages(prevMessages => {
+      if (message.replaceId) {
+        return prevMessages.map(msg => 
+          msg.id === message.replaceId ? message : msg
+        );
+      }
+      return [...prevMessages, message];
+    });
   };
 
   const handleModelChange = (newModel) => {
