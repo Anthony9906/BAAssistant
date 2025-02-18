@@ -202,8 +202,8 @@ function Library() {
     }
 
     try {
-      // 从 localStorage 获取当前模型，默认值改为 'gpt-4o'
-      const currentModel = localStorage.getItem('selectedModel') || 'gpt-4o';
+      // 从 localStorage 获取当前模型，默认值改为 'gpt-4o-mini'
+      const currentModel = localStorage.getItem('selectedModel') || 'openai/gpt-4o-mini';
 
       // 创建新的 chat
       const { data: chat, error } = await supabase

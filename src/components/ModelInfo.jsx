@@ -209,7 +209,8 @@ function ModelInfo() {
         <h2>LLM Project Docs Generator</h2>
       </div>
       <p className="model-info-description">
-        A helper to generate docs for your project with LLM Agent, reproducible outputs, parallel function calling, and more...
+      A powerful AI-driven document generator that helps you create,
+      maintain, and organize project documentation with advanced LLM capabilities.
       </p>
       
       <div className="model-info-providers">
@@ -256,7 +257,7 @@ function ModelInfo() {
                 <div className="empty-icon-wrapper">
                   <FiFileText className="empty-icon" />
 
-                  <h3>AI还没有为你生成任何文档</h3>
+                  <h3>AI 还没有生成任何文档</h3>
                   <ul className="empty-documents-steps">
                     <li>
                       <span className="step-number">1</span>
@@ -264,15 +265,15 @@ function ModelInfo() {
                     </li>
                     <li>
                       <span className="step-number">2</span>
-                      通过话题讨论，让 AI 帮你分析项目
+                      通过话题讨论，让 AI 全方位分析项目
                     </li>
                     <li>
                       <span className="step-number">3</span>
-                      让 AI 总结你们的讨论生成文档
+                      AI 会总结所有讨论后生成文档
                     </li>
                     <li>
                       <span className="step-number">4</span>
-                      你可以尝试使用不同 LLM 生成
+                      你还可以尝试使用不同 LLM 获得建议
                     </li>
                   </ul>
                 </div>

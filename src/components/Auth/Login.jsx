@@ -66,8 +66,7 @@ function Login() {
           <p className="model-description-login">
             A powerful AI-driven documentation generator that helps you create,
             maintain, and organize project documentation with advanced LLM capabilities.
-            Featuring reproducible outputs, parallel processing, and intelligent
-            content generation.
+            Featuring reproducible outputs, parallel function calling, and RAG content generation.
           </p>
           <div className="login-llm-providers">
             {providers.map((provider) => (

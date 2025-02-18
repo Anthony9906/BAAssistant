@@ -114,10 +114,10 @@ function DocumentPreview({
               ai: {
                 models: {
                   openai: {
-                    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-                    model: 'gpt-4o',
-                    max_tokens: 512,
-                    customUrl: import.meta.env.VITE_OPENAI_BASE_URL+"/chat/completions"
+                    apiKey: import.meta.env.VITE_OPENAI_API_KEY_OPENROUTER,
+                    model: 'deepseek/deepseek-r1:free',
+                    max_tokens: 1024,
+                    customUrl: import.meta.env.VITE_OPENAI_BASE_URL_OPENROUTER+"/chat/completions"
                   }
                 },
                 menus:[
@@ -137,8 +137,8 @@ function DocumentPreview({
                   },
                   {
                       icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 5C13.567 5 12 6.567 12 8.5C12 10.433 13.567 12 15.5 12C17.433 12 19 10.433 19 8.5C19 6.567 17.433 5 15.5 5ZM10 8.5C10 5.46243 12.4624 3 15.5 3C18.5376 3 21 5.46243 21 8.5C21 9.6575 20.6424 10.7315 20.0317 11.6175L22.7071 14.2929L21.2929 15.7071L18.6175 13.0317C17.7315 13.6424 16.6575 14 15.5 14C12.4624 14 10 11.5376 10 8.5ZM3 4H8V6H3V4ZM3 11H8V13H3V11ZM21 18V20H3V18H21Z"></path></svg>`,
-                      name: "AI 格式整理",
-                      prompt: "请帮我使用规范的Markdown格式整理这段内容，内容为：{content}, 直接返回结果",
+                      name: "AI 格式优化",
+                      prompt: "请帮我使用规范的格式优化这段文档的内容，内容为：{content}，让标题、副标题、段落、列表等内容显示合理、易于阅读，直接返回结果",
                       text: "selected",
                       model:"auto",
                   },

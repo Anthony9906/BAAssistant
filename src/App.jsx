@@ -48,7 +48,13 @@ function ChatContainer() {
     if (!chatId && messages.length > 0) {
       const saveFreetalks = async () => {
         try {
-          const newMessages = messages.map(msg => ({
+          // 过滤掉 loading 状态的消息和临时消息
+          const validMessages = messages.filter(msg => 
+            !msg.content.includes('{{loading}}') && // 过滤 loading 状态
+            !msg.id?.startsWith('temp-') // 过滤临时消息
+          );
+
+          const newMessages = validMessages.map(msg => ({
             user_id: user.id,
             role: msg.role,
             content: msg.content,

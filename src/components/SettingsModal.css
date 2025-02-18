@@ -57,7 +57,7 @@
 }
 
 .settings-modal__section {
-  margin-bottom: 24px;
+  margin-bottom: 0px;
 }
 
 .settings-modal__section-title {
@@ -169,4 +169,127 @@
   background-color: #e5e7eb;
   padding: 1px 6px;
   border-radius: 4px;
-} 
+}
+
+.settings-modal__tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.settings-modal__tab {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #64748b;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settings-modal__tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.settings-modal__tab:hover {
+  color: #3b82f6;
+}
+
+.settings-modal__router-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-modal__router-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+}
+
+.settings-modal__router-info {
+  flex: 1;
+}
+
+.settings-modal__router-name {
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+.settings-modal__router-description {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.settings-modal__radio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.settings-modal__radio input {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+.settings-modal__loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.settings-modal__router-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.settings-modal__router-config {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.settings-modal__config-field {
+  margin-bottom: 1rem;
+}
+
+.settings-modal__config-label {
+  display: block;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.settings-modal__config-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+
+.settings-modal__config-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.settings-modal__config-input[type="password"] {
+  letter-spacing: 0.25em;
+}

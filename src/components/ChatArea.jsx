@@ -12,18 +12,38 @@ import "aieditor/dist/style.css";
 import DocumentPreview from './DocumentPreview';
 import HelpBot from './HelpBot';
 import { encode } from 'gpt-tokenizer';  // 需要先安装 gpt-tokenizer 包
+import { useOpenAI } from '../hooks/useOpenAI';
 
-export const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  baseURL: import.meta.env.VITE_OPENAI_BASE_URL,
-  dangerouslyAllowBrowser: true
-});
-
-const MODEL_DISPLAY_NAMES = {
-  'gpt-4o': 'GPT-4O',
-  'deepseek-r1': 'DeepSeek R1',
-  'o3-mini': 'O3 Mini',
-  'claude-3-5-sonnet-20241022': 'Claude 3.5'
+// 为不同的 router 定义独立的模型信息
+const ROUTER_MODELS = {
+  'router-a': {
+    'deepseek/deepseek-r1:free': {
+      name: 'DeepSeek R1'
+    },
+    'openai/gpt-4o-mini': {
+      name: 'GPT-4o-mini'
+    },
+    'openai/gpt-4o-2024-11-20': {
+      name: 'GPT-4o'
+    },
+    'anthropic/claude-3.5-sonnet': {
+      name: 'Claude 3.5 Sonnet'
+    }
+  },
+  'router-b': {
+    'deepseek-r1': {
+      name: 'DeepSeek R1'
+    },
+    'gpt-4o': {
+      name: 'GPT-4O'
+    },
+    'o3-mini': {
+      name: 'O3 Mini'
+    },
+    'claude-3-5-sonnet-20241022': {
+      name: 'Claude 3.5 Sonnet'
+    }
+  }
 };
 
 function ChatArea({ 
@@ -43,19 +63,16 @@ function ChatArea({
   const [showPreview, setShowPreview] = useState(false);
   const [editorContent, setEditorContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [availableModels, setAvailableModels] = useState({
-    'gpt-4o': true,
-    'deepseek-r1': true,
-    'o3-mini': true,
-    'claude-3-5-sonnet-20241022': true
-  });
+  const [availableModels, setAvailableModels] = useState({});
   const [selectedModel, setSelectedModel] = useState(() => {
     const savedModel = localStorage.getItem('selectedModel');
-    return savedModel || 'gpt-4o';
+    return savedModel || 'openai/gpt-4o-mini'; // 默认模型
   });
+  const [selectedRouter, setSelectedRouter] = useState('router-a');
   const editorRef = useRef(null);
   const editorInstanceRef = useRef(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const { openai, loading: openaiLoading } = useOpenAI();
 
   // 根据消息和加载状态决定是否显示欢迎图片
   const showWelcome = parentMessages.length === 0 && !parentLoading && !streamingMessage;
@@ -91,39 +108,76 @@ function ChatArea({
     }
   }, [streamingMessage]);
 
-  // 获取用户设置的可用模型
+  // 获取全局路由和模型配置
   useEffect(() => {
-    const fetchUserSettings = async () => {
+    const fetchSettings = async () => {
       try {
-        const { data, error } = await supabase
-          .from('user_settings')
-          .select('settings')
-          .eq('user_id', user.id)
+        // 获取当前选择的路由
+        const { data: routerData, error: routerError } = await supabase
+          .from('settings')
+          .select('*')
+          .eq('key', 'router.selected')
           .single();
 
-        if (error) throw error;
+        if (routerError) throw routerError;
+        
+        const currentRouter = routerData?.value || 'router-a';
+        setSelectedRouter(currentRouter);
 
-        if (data?.settings?.models) {
-          setAvailableModels(data.settings.models);
-          // 如果当前选中的模型被禁用，自动切换到第一个可用的模型
-          if (!data.settings.models[selectedModel]) {
-            const firstAvailableModel = Object.entries(data.settings.models)
-              .find(([_, enabled]) => enabled)?.[0];
-            if (firstAvailableModel) {
-              setSelectedModel(firstAvailableModel);
-              localStorage.setItem('selectedModel', firstAvailableModel);
-            }
+        // 获取模型配置
+        const { data: modelData, error: modelError } = await supabase
+          .from('settings')
+          .select('*')
+          .like('key', 'model.%');
+
+        if (modelError) throw modelError;
+
+        const modelSettings = {};
+        modelData.forEach(setting => {
+          const modelId = setting.key.replace('model.', '');
+          modelSettings[modelId] = setting.value.enabled;
+        });
+
+        setAvailableModels(modelSettings);
+
+        // 检查保存的模型是否可用
+        const savedModel = localStorage.getItem('selectedModel');
+        const currentRouterModels = ROUTER_MODELS[currentRouter] || {};
+        
+        if (!savedModel || 
+            !modelSettings[savedModel] || 
+            !currentRouterModels[savedModel]) {
+          // 如果保存的模型不可用，选择第一个可用的模型
+          const firstAvailableModel = Object.keys(currentRouterModels)
+            .find(modelId => modelSettings[modelId]);
+          
+          if (firstAvailableModel) {
+            setSelectedModel(firstAvailableModel);
+            localStorage.setItem('selectedModel', firstAvailableModel);
           }
         }
       } catch (error) {
-        console.error('Error fetching user settings:', error);
+        console.error('Error fetching settings:', error);
+        toast.error('Failed to load settings');
       }
     };
 
-    if (user?.id) {
-      fetchUserSettings();
-    }
-  }, [user?.id]);
+    fetchSettings();
+
+    // 订阅设置变更
+    const subscription = supabase
+      .channel('settings_changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'settings'
+      }, fetchSettings)
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // 初始化编辑器
   useEffect(() => {
@@ -182,7 +236,7 @@ function ChatArea({
   const sendMessage = async (e, content = null) => {
     if (e) e.preventDefault();
     const messageContent = content || inputMessage;
-    if ((!messageContent.trim() && !content) || isLoading) return;
+    if ((!messageContent.trim() && !content) || isLoading || !openai) return;
 
     setIsLoading(true);
     setInputMessage('');
@@ -408,7 +462,7 @@ function ChatArea({
     };
   };
 
-  // 当模型选择改变时，保存到 localStorage
+  // 处理模型选择变更
   const handleModelChange = (e) => {
     const newModel = e.target.value;
     setSelectedModel(newModel);
@@ -546,6 +600,11 @@ function ChatArea({
     }
   };
 
+  // 如果 OpenAI 实例还在加载中，可以显示加载状态
+  if (openaiLoading) {
+    return <div className="chat-loading">Initializing chat...</div>;
+  }
+
   return (
     <div className="chat-area">
       {parentLoading && <LoadingSpinner />}
@@ -557,13 +616,17 @@ function ChatArea({
             onChange={handleModelChange}
             className="model-select"
           >
-            {Object.entries(availableModels).map(([model, enabled]) => (
-              enabled && (
-                <option key={model} value={model}>
-                  {MODEL_DISPLAY_NAMES[model]}
+            {Object.entries(ROUTER_MODELS[selectedRouter] || {})
+              .filter(([modelId]) => availableModels[modelId])
+              .map(([modelId, { name, description, color }]) => (
+                <option 
+                  key={modelId} 
+                  value={modelId}
+                  style={{ borderLeft: `4px solid ${color}` }}
+                >
+                  {name}
                 </option>
-              )
-            ))}
+              ))}
           </select>
           <button 
             className="help-button"
@@ -615,8 +678,8 @@ function ChatArea({
                   {message.role === 'assistant' && (
                     <span 
                       className="tokens"
-                      title={MODEL_DISPLAY_NAMES[message.model] || message.model}
-                      data-tooltip={MODEL_DISPLAY_NAMES[message.model] || message.model}
+                      title={ROUTER_MODELS[selectedRouter][message.model]?.name || message.model}
+                      data-tooltip={ROUTER_MODELS[selectedRouter][message.model]?.name || message.model}
                     >
                       {calculateTokens(message.content, message.model)} tokens
                     </span>
