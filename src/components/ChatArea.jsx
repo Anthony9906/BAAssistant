@@ -93,90 +93,32 @@ function ChatArea({
     }
   }, [parentMessages, parentLoading]);
 
+  // 添加新的 useEffect 来模拟用户操作
   useEffect(() => {
-    if (parentMessages?.length === 1 && 
-        parentMessages[0].role === 'user' && 
-        !parentMessages.some(msg => msg.role === 'assistant') &&
-        processedMessageRef.current !== parentMessages[0].id) {  // 检查是否处理过这条消息
-      
-      // 记录当前正在处理的消息 ID
-      processedMessageRef.current = parentMessages[0].id;
-      
-      const loadingId = Date.now();
-      const tempLoadingMessage = {
-        role: 'assistant',
-        content: '{{loading}}',
-        chat_id: chatId,
-        id: loadingId,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      onNewMessage(tempLoadingMessage);
-
-      (async () => {
-        try {
-          const stream = await openai.chat.completions.create({
-            model: selectedModel,
-            messages: [
-              {
-                role: "system",
-                content: templatePrompt || "你是一名资深的项目管理专家，你也对企业管理有深入的了解，同时具有丰富的数字化项目实践经验，擅长为企业提供数字化项目咨询与建议"
-              },
-              ...parentMessages.map(msg => ({
-                role: msg.role,
-                content: msg.content
-              }))
-            ],
-            stream: true,
-            max_tokens: 1024,
-            temperature: 0.5
-          });
-
-          let fullResponse = '';
-          for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content || '';
-            fullResponse += content;
-            
-            onNewMessage({
-              role: 'assistant',
-              content: fullResponse,
-              chat_id: chatId,
-              id: loadingId,
-              timestamp: tempLoadingMessage.timestamp,
-              replaceId: loadingId
+    // 只在有 chatId 且没有任何消息时执行
+    if (chatId && parentMessages.length === 0 && !parentLoading && !isLoading) {
+      // 使用 setTimeout 确保组件完全加载
+      const timer = setTimeout(() => {
+        // 1. 设置输入框的值
+        setInputMessage("你好，我是一名项目经理，可以协助我分析我的项目吗？");
+        
+        // 2. 创建一个模拟的表单提交事件
+        const form = document.querySelector('.chat-input');
+        if (form) {
+          // 使用另一个 setTimeout 确保输入值已经被设置
+          setTimeout(() => {
+            const submitEvent = new Event('submit', {
+              bubbles: true,
+              cancelable: true,
             });
-          }
-
-          if (chatId) {
-            await saveMessageToSupabase({
-              role: 'assistant',
-              content: fullResponse,
-              chat_id: chatId,
-              model: selectedModel,
-              created_at: new Date().toISOString()
-            });
-          }
-        } catch (error) {
-          console.error('Error in initial message:', error);
-          toast.error('发送消息失败，请重试');
-          onNewMessage({
-            role: 'assistant',
-            content: '发送失败，请重试',
-            chat_id: chatId,
-            id: loadingId,
-            timestamp: tempLoadingMessage.timestamp,
-            replaceId: loadingId
-          });
+            form.dispatchEvent(submitEvent);
+          }, 100);
         }
-      })();
-    }
-  }, [parentMessages]);
+      }, 500);
 
-  // 当流式消息更新时也滚动到底部
-  useEffect(() => {
-    if (streamingMessage) {
-      scrollToBottom();
+      return () => clearTimeout(timer);
     }
-  }, [streamingMessage]);
+  }, [chatId, parentMessages.length, parentLoading, isLoading]);
 
   // 获取全局路由和模型配置
   useEffect(() => {
@@ -313,7 +255,19 @@ function ChatArea({
     setStreamingMessage('');
 
     try {
-      // 使用数字类型的临时 ID
+      // 如果是手动发送的消息，先添加用户消息到界面
+      if (!content) {
+        const userMessage = {
+          role: 'user',
+          content: messageContent,
+          chat_id: chatId,
+          id: `user-${Date.now()}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        onNewMessage(userMessage);
+      }
+
+      // 然后添加 loading 消息
       const tempLoadingMessage = {
         role: 'assistant',
         content: '{{loading}}',
@@ -322,17 +276,6 @@ function ChatArea({
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       onNewMessage(tempLoadingMessage);
-
-      // 如果是手动发送的消息，才添加用户消息到界面
-      if (!content) {
-        const userMessage = {
-          role: 'user',
-          content: messageContent,
-          chat_id: chatId,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        onNewMessage(userMessage);
-      }
 
       // 保存用户消息到数据库
       if (chatId && !content) {

@@ -131,21 +131,13 @@ function ChatContainer() {
 
       if (messagesError) throw messagesError;
 
-      if (messagesData.length === 0 && chat.chat_prompt) {
-        const systemMessage = {
-          id: 'system-' + Date.now(),
-          role: 'system',
-          content: chat.chat_prompt,
-          chat_id: chatId,
-          user_id: user.id,
-          created_at: new Date().toISOString()
-        };
-        messagesData.unshift(systemMessage);
-      }
-
+      // 直接格式化消息，移除了添加系统消息的逻辑
       const formattedMessages = messagesData.map(msg => ({
         ...msg,
-        timestamp: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        timestamp: new Date(msg.created_at).toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
       }));
 
       setMessages(formattedMessages);
@@ -165,11 +157,35 @@ function ChatContainer() {
   const handleNewMessage = (message) => {
     setMessages(prevMessages => {
       if (message.replaceId) {
+        // 如果是替换消息，需要检查原消息是否应该保留
+        const existingMessage = prevMessages.find(msg => msg.id === message.replaceId);
+        
+        if (existingMessage?.persisted && !message.persisted) {
+          // 如果现有消息是持久化的，而新消息不是，则保留现有消息
+          return prevMessages;
+        }
+
+        // 确保不会意外删除其他消息
         return prevMessages.map(msg => 
-          msg.id === message.replaceId ? message : msg
+          msg.id === message.replaceId ? {
+            ...message,
+            // 保留原消息的持久化状态，除非新消息明确指定
+            persisted: message.persisted ?? existingMessage?.persisted
+          } : msg
         );
       }
-      return [...prevMessages, message];
+
+      // 添加新消息时确保消息对象的完整性
+      const newMessage = {
+        ...message,
+        id: message.id || Date.now(),  // 确保消息有 ID
+        timestamp: message.timestamp || new Date().toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
+      };
+
+      return [...prevMessages, newMessage];
     });
   };
 

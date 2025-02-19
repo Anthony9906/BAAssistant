@@ -220,20 +220,7 @@ function Library() {
 
       if (chatError) throw chatError;
 
-      // 创建初始消息时设置 auto_replied 为 true
-      const { error: messageError } = await supabase
-        .from('messages')
-        .insert([{
-          chat_id: chat.id,
-          role: 'user',
-          content: '可以帮助我一起讨论分析我的项目吗？',
-          user_id: user.id,
-          model: currentModel,
-          auto_replied: true  // 设置标记
-        }]);
-
-      if (messageError) throw messageError;
-
+      // 直接跳转到新会话
       navigate(`/chats/${chat.id}`);
     } catch (error) {
       console.error('Error creating chat:', error);
