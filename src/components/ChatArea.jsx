@@ -278,12 +278,30 @@ function ChatArea({
       onNewMessage(tempLoadingMessage);
 
       // 保存用户消息到数据库
-      if (chatId && !content) {
-        await saveMessageToSupabase({
-          role: 'user',
-          content: messageContent,
-          chat_id: chatId
-        });
+      if (!content) {  // 确保是手动发送的消息
+        if (chatId) {
+          await saveMessageToSupabase({
+            role: 'user',
+            content: messageContent,
+            chat_id: chatId
+          });
+        } else {
+          // 保存到 freetalks 表
+          const { error } = await supabase
+            .from('freetalks')
+            .insert([{
+              user_id: user.id,
+              role: 'user',
+              content: messageContent,
+              created_at: new Date().toISOString(),
+              model: selectedModel
+            }]);
+
+          if (error) {
+            console.error('保存用户消息失败:', error);
+            toast.error('保存消息失败，但对话可以继续');
+          }
+        }
       }
 
       let fullResponse = '';
@@ -319,6 +337,7 @@ function ChatArea({
           content: fullResponse,
           chat_id: chatId,
           id: tempLoadingMessage.id,
+          model: selectedModel,
           timestamp: tempLoadingMessage.timestamp,
           replaceId: tempLoadingMessage.id
         });
@@ -333,6 +352,22 @@ function ChatArea({
           model: selectedModel,
           created_at: new Date().toISOString()
         });
+      } else {
+        // 保存到 freetalks 表
+        const { error } = await supabase
+          .from('freetalks')
+          .insert([{
+            user_id: user.id,
+            role: 'assistant',
+            content: fullResponse,
+            created_at: new Date().toISOString(),
+            model: selectedModel
+          }]);
+
+        if (error) {
+          console.error('保存 AI 回复失败:', error);
+          toast.error('保存消息失败，但对话可以继续');
+        }
       }
       
       setStreamingMessage('');
@@ -430,7 +465,7 @@ function ChatArea({
               <line x1="12" y1="16" x2="12.01" y2="16"></line>
             </svg>
           </div>
-          <h3>准备生成文档</h3>
+          <h3>准备生成文档预览</h3>
         </div>
         <div class="generate-confirm-body">
           <div class="main-message">
@@ -439,9 +474,9 @@ function ChatArea({
           <div class="tips-section">
             <p class="tips-title">为了获得高质量的文档，建议您：</p>
             <ul>
-              <li><span class="bullet">•</span> 完成全部 AI 建议话题的讨论</li>
-              <li><span class="bullet">•</span> 与 AI 讨论您希望包含在文档中的其它话题，并让 AI 给出分析与洞察</li>
-              <li><span class="bullet">•</span> 就您重点关注的话题与 AI 进行多轮的深入探讨</li>
+              <li><span class="bullet">•</span> 跟随并完成全部 AI 建议话题的讨论</li>
+              <li><span class="bullet">•</span> 与 AI 讨论您希望包含在文档中的其它问题，让 AI 给出分析与洞察</li>
+              <li><span class="bullet">•</span> 你重点关心的话题与 AI 进行多轮的深入探讨</li>
             </ul>
           </div>
         </div>
@@ -503,27 +538,6 @@ function ChatArea({
   const regenerateResponse = async (messageIndex) => {
     if (isLoading) return;
 
-    // 检查是否是最后一条 AI 消息
-    const isLastAIMessage = parentMessages
-      .slice(messageIndex + 1)
-      .every(msg => msg.role === 'user');
-
-    if (!isLastAIMessage) {
-      toast.error('你只能对 AI 最后一次回复进行重新生成，或直接提问 AI', {
-        duration: 4000,
-        position: 'top-center',
-        style: {
-          background: '#f43f5e',
-          color: '#fff',
-          fontSize: '14px',
-          padding: '16px',
-          maxWidth: '500px',
-          borderRadius: '8px'
-        },
-      });
-      return;
-    }
-
     try {
       setIsLoading(true);
       setStreamingMessage('');
@@ -537,7 +551,8 @@ function ChatArea({
         replaceId: messageId,
         role: 'assistant',
         content: '{{loading}}',
-        id: messageId
+        id: messageId,
+        model: selectedModel
       });
 
       // 重新请求 AI 响应
@@ -568,20 +583,38 @@ function ChatArea({
           role: 'assistant',
           content: fullResponse,
           id: messageId,
+          model: selectedModel,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         });
       }
 
       // 更新数据库中的消息
       if (chatId) {
+        console.log('更新 messages 表中的消息:', messageId);
         const { error } = await supabase
           .from('messages')
           .update({
             content: fullResponse,
             model: selectedModel,
-            created_at: new Date().toISOString()  // 更新创建时间为当前时间
+            created_at: new Date().toISOString()
           })
-          .eq('id', messageId);  // 使用消息ID定位要更新的记录
+          .eq('id', messageId);
+
+        if (error) {
+          console.error('更新消息失败:', error);
+          toast.error('更新消息失败，但对话可以继续');
+        }
+      } else {
+        // 更新 freetalks 表中的消息
+        console.log('更新 freetalks 表中的消息:', messageId);
+        const { error } = await supabase
+          .from('freetalks')
+          .update({
+            content: fullResponse,
+            model: selectedModel,
+            created_at: new Date().toISOString()
+          })
+          .eq('id', messageId);
 
         if (error) {
           console.error('更新消息失败:', error);
@@ -594,10 +627,10 @@ function ChatArea({
       toast.error('重新生成失败，请重试');
       // 发生错误时恢复原消息
       onNewMessage({
-        replaceId: messageId,
+        replaceId: currentMessage.id,
         role: 'assistant',
         content: currentMessage.content,
-        id: messageId,
+        id: currentMessage.id,
         timestamp: currentMessage.timestamp
       });
     } finally {
@@ -661,7 +694,7 @@ function ChatArea({
           title="生成文档"
         >
           <FiFileText className="generate-icon" />
-          <span>{isGenerating ? 'Generating...' : 'Generate'}</span>
+          <span>{isGenerating ? 'Generating...' : '生成文档预览'}</span>
         </button>
       </div>
 
@@ -711,14 +744,19 @@ function ChatArea({
                       >
                         <FiCopy className="action-icon" />
                       </button>
-                      <button 
-                        className="message-action-button" 
-                        title="重新生成"
-                        onClick={() => regenerateResponse(index)}
-                        disabled={isLoading}
-                      >
-                        <FiRefreshCw className={`action-icon ${isLoading ? 'spinning' : ''}`} />
-                      </button>
+                      {/* 只在最后一条 AI 消息上显示重新生成按钮 */}
+                      {parentMessages
+                        .slice(parentMessages.indexOf(message) + 1)
+                        .every(msg => msg.role === 'user') && (
+                        <button 
+                          className="message-action-button" 
+                          title="重新生成"
+                          onClick={() => regenerateResponse(parentMessages.indexOf(message))}
+                          disabled={isLoading}
+                        >
+                          <FiRefreshCw className={`action-icon ${isLoading ? 'spinning' : ''}`} />
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

@@ -109,14 +109,14 @@ function DocumentPreview({
               height: '100%',
               markdown: true,
               contentIsMarkdown: true,
-              draggable: false,
+              draggable: true,
               pasteAsText: false,
               ai: {
                 models: {
                   openai: {
                     apiKey: import.meta.env.VITE_OPENAI_API_KEY_OPENROUTER,
-                    model: 'deepseek/deepseek-r1:free',
-                    max_tokens: 1024,
+                    model: 'openai/gpt-4o-mini',
+                    max_tokens: 8000,
                     customUrl: import.meta.env.VITE_OPENAI_BASE_URL_OPENROUTER+"/chat/completions"
                   }
                 },
@@ -124,21 +124,21 @@ function DocumentPreview({
                   {
                       icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15 18H16.5C17.8807 18 19 16.8807 19 15.5C19 14.1193 17.8807 13 16.5 13H3V11H16.5C18.9853 11 21 13.0147 21 15.5C21 17.9853 18.9853 20 16.5 20H15V22L11 19L15 16V18ZM3 4H21V6H3V4ZM9 18V20H3V18H9Z"></path></svg>`,
                       name: "AI 文档续写",
-                      prompt: "请根据这段话的内容，帮我继续扩展分析，扩展的内容需要具有很强的相关性，并且逻辑清晰，最好采用列表的方式逐一说明",
+                      prompt: "请根据这段话的内容，帮我继续扩展分析，扩展的内容需要具有很强的相关性，并且逻辑清晰，最好采用列表形式逐一说明",
                       text: "focusBefore",
                       model:"auto",
                   },
                   {
                       icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.0007 1.20825 18.3195 3.68108 20.7923 4.99992 18.3195 6.31876 17.0007 8.79159 15.6818 6.31876 13.209 4.99992 15.6818 3.68108 17.0007 1.20825ZM10.6673 9.33325 15.6673 11.9999 10.6673 14.6666 8.00065 19.6666 5.33398 14.6666.333984 11.9999 5.33398 9.33325 8.00065 4.33325 10.6673 9.33325ZM11.4173 11.9999 9.18905 10.8115 8.00065 8.58325 6.81224 10.8115 4.58398 11.9999 6.81224 13.1883 8.00065 15.4166 9.18905 13.1883 11.4173 11.9999ZM19.6673 16.3333 18.0007 13.2083 16.334 16.3333 13.209 17.9999 16.334 19.6666 18.0007 22.7916 19.6673 19.6666 22.7923 17.9999 19.6673 16.3333Z"></path></svg>`,
                       name: "AI 内容优化",
-                      prompt: "请帮我优化一下这段文档文字的内容，内容为：{content}，让它更专业和准确，符合项目文档的规范，并返回结果",
+                      prompt: "请帮我优化一下这段文档文字的内容，内容为：{content}，让它更专业和准确，并且符合项目文档的格式规范，直接返回结果",
                       text: "selected",
                       model:"auto",
                   },
                   {
                       icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 5C13.567 5 12 6.567 12 8.5C12 10.433 13.567 12 15.5 12C17.433 12 19 10.433 19 8.5C19 6.567 17.433 5 15.5 5ZM10 8.5C10 5.46243 12.4624 3 15.5 3C18.5376 3 21 5.46243 21 8.5C21 9.6575 20.6424 10.7315 20.0317 11.6175L22.7071 14.2929L21.2929 15.7071L18.6175 13.0317C17.7315 13.6424 16.6575 14 15.5 14C12.4624 14 10 11.5376 10 8.5ZM3 4H8V6H3V4ZM3 11H8V13H3V11ZM21 18V20H3V18H21Z"></path></svg>`,
                       name: "AI 格式优化",
-                      prompt: "请帮我使用规范的格式优化这段文档的内容，内容为：{content}，让标题、副标题、段落、列表等内容显示合理、易于阅读，直接返回结果",
+                      prompt: "根据这段内容上下文的排版，帮我优化这段文档内容的排版，内容为：{content}，让标题、副标题、段落、列表、表格等内容与上下文排版结构一致，结构层次清晰、容易阅读，直接返回结果",
                       text: "selected",
                       model:"auto",
                   },

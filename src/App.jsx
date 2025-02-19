@@ -42,53 +42,6 @@ function ChatContainer() {
     }
   }, [chatId]); // 只依赖 chatId
 
-  // 单独处理 messages 的保存
-  useEffect(() => {
-    // 只在没有 chatId 且有消息时保存
-    if (!chatId && messages.length > 0) {
-      const saveFreetalks = async () => {
-        try {
-          // 过滤掉 loading 状态的消息和临时消息
-          const validMessages = messages.filter(msg => 
-            !msg.content.includes('{{loading}}') && // 过滤 loading 状态
-            !msg.id?.startsWith('temp-') // 过滤临时消息
-          );
-
-          const newMessages = validMessages.map(msg => ({
-            user_id: user.id,
-            role: msg.role,
-            content: msg.content,
-            created_at: msg.created_at || new Date().toISOString(),
-            model: msg.model || selectedModel,
-            timestamp: new Date(msg.created_at || new Date()).toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })
-          }));
-
-          const { error: insertError } = await supabase
-            .from('freetalks')
-            .upsert(newMessages, {
-              onConflict: 'user_id,created_at',
-              returning: true
-            });
-
-          if (insertError) throw insertError;
-        } catch (error) {
-          console.error('Error saving freetalks:', error);
-          toast.error('保存对话记录失败');
-        }
-      };
-
-      // 使用防抖来避免频繁保存
-      const timeoutId = setTimeout(() => {
-        saveFreetalks();
-      }, 1000); // 1秒后执行保存
-
-      return () => clearTimeout(timeoutId); // 清理定时器
-    }
-  }, [chatId, messages, user?.id, selectedModel]); // 添加必要的依赖项
-
   const fetchChatData = async () => {
     setIsLoading(true);
 
