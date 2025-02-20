@@ -1,5 +1,5 @@
-.loading-spinner-overlay {
-  position: fixed;
+.ai-loading-spinner-overlay {
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -7,26 +7,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.5);
   z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
-.loading-spinner-container {
+.ai-loading-spinner-container {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  background: rgba(125, 59, 160, 0.1);
 }
 
-.loading-spinner-circle {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f4f6;
-  border-top: 3px solid #3b82f6;
+.ai-loading-spinner-circle {
+  width: 60px;
+  height: 60px;
+  border: 8px solid #f3f4f6;
+  border-top: 8px solid #7425c2;
   border-radius: 50%;
-  animation: spinner-rotate 1s linear infinite;
+  animation: ai-spinner-rotate 1s linear infinite;
 }
 
-@keyframes spinner-rotate {
+@keyframes ai-spinner-rotate {
   0% {
     transform: rotate(0deg);
   }

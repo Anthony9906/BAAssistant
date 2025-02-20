@@ -826,6 +826,29 @@
       width: 20px;
       height: 20px;
     }
+    
+    .history-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .history-button:hover {
+      color: #334155;
+    }
+    
+    .history-icon {
+      width: 16px;
+      height: 16px;
+    }
 
     /* 更新确认弹窗样式 */
     .generate-confirm-dialog {

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { FiX, FiEdit2, FiSave } from 'react-icons/fi';
+import { FiX, FiEdit2, FiSave, FiMessageSquare, FiFolder, FiTrash2 } from 'react-icons/fi';
 import { AiEditor } from "aieditor";
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '../lib/supabase';
@@ -28,6 +28,11 @@ function DocumentPreview({
   const contentRef = useRef(null);
   const streamContentRef = useRef(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [messageCount, setMessageCount] = useState(0);
+  const [projects, setProjects] = useState([]);
+  const [showProjectMenu, setShowProjectMenu] = useState(false);
+  const [projectId, setProjectId] = useState(null);
+  const [projectName, setProjectName] = useState("未关联项目");
 
   useEffect(() => {
     if (title) {
@@ -315,6 +320,124 @@ function DocumentPreview({
     }
   };
 
+  // 获取消息数量
+  useEffect(() => {
+    const fetchMessageCount = async () => {
+      if (chatId) {
+        try {
+          const { data, error } = await supabase
+            .from('messages')
+            .select('id', { count: 'exact' })
+            .eq('chat_id', chatId);
+
+          if (error) throw error;
+          setMessageCount(data.length);
+        } catch (error) {
+          console.error('Error fetching message count:', error);
+        }
+      }
+    };
+
+    fetchMessageCount();
+  }, [chatId]);
+
+  // 处理聊天记录点击
+  const handleChatClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (chatId && messageCount > 0) {
+      window.location.href = `/chats/${chatId}`;
+    }
+  };
+
+  // 获取项目列表和当前文档的项目信息
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!documentId) return;
+      
+      try {
+        // 获取所有项目
+        const { data: projectsData, error: projectsError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (projectsError) throw projectsError;
+        setProjects(projectsData);
+
+        // 获取当前文档的项目 ID
+        const { data: docData, error: docError } = await supabase
+          .from('docs')
+          .select('project_id')
+          .eq('id', documentId)
+          .single();
+
+        if (docError) throw docError;
+        setProjectId(docData.project_id);
+
+        // 设置项目名称
+        if (docData.project_id) {
+          const project = projectsData.find(p => p.id === docData.project_id);
+          setProjectName(project ? project.name : "未关联项目");
+        }
+      } catch (error) {
+        console.error('Error fetching project data:', error);
+      }
+    };
+
+    fetchProjectData();
+  }, [documentId, user?.id]);
+
+  // 处理项目关联
+  const handleAssignToProject = async (newProjectId) => {
+    try {
+      const { error } = await supabase
+        .from('docs')
+        .update({ project_id: newProjectId })
+        .eq('id', documentId);
+
+      if (error) throw error;
+      
+      setProjectId(newProjectId);
+      const project = projects.find(p => p.id === newProjectId);
+      setProjectName(project ? project.name : "未关联项目");
+      toast.success('已关联到项目');
+    } catch (error) {
+      console.error('Error assigning document to project:', error);
+      toast.error('关联项目失败');
+    } finally {
+      setShowProjectMenu(false);
+    }
+  };
+
+  // 处理文档删除
+  const handleDelete = async () => {
+    if (!documentId) return;
+
+    const confirmed = window.confirm('确定要删除此文档吗？文档删除后将无法恢复。');
+    if (!confirmed) return;
+
+    try {
+      const { error } = await supabase
+        .from('docs')
+        .delete()
+        .eq('id', documentId);
+
+      if (error) throw error;
+      
+      toast.success('文档已删除');
+      if (onDocumentUpdate) {
+        await onDocumentUpdate();
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      toast.error('删除文档失败');
+    }
+  };
+
   if (!show) return null;
 
   return (
@@ -322,6 +445,18 @@ function DocumentPreview({
       <div className="preview-content">
         <div className="preview-header">
           <div className="title-section">
+            <div className="preview-doc-type-tag">
+              {chatTitle || "Document"}
+            </div>
+            <button 
+              className="chat-count-tag"
+              onClick={handleChatClick}
+              title={messageCount > 0 ? "查看关联的聊天记录" : "暂无聊天记录"}
+              disabled={!chatId || messageCount === 0}
+            >
+              <FiMessageSquare className="tag-icon" />
+              <span>{messageCount}</span>
+            </button>
             <button 
               className="edit-title-button"
               onClick={() => setIsEditingTitle(true)}
@@ -353,12 +488,19 @@ function DocumentPreview({
                 </button>
               </div>
             ) : (
-              <h3>
-                {isGenerating && !documentId ? '生成文档中...' : editableTitle}
-              </h3>
+              <h3>{isGenerating && !documentId ? '生成文档中...' : editableTitle}</h3>
             )}
           </div>
           <div className="preview-header-actions">
+            {documentId && (
+              <button 
+                className="delete-doc-button"
+                onClick={handleDelete}
+                title="删除文档"
+              >
+                <FiTrash2 />
+              </button>
+            )}
             <button 
               className="save-doc-button"
               onClick={handleSave}
@@ -373,6 +515,13 @@ function DocumentPreview({
             >
               <FiX />
             </button>
+          </div>
+        </div>
+        <div className="preview-document-meta">
+          <div className="preview-document-tags">
+            <div className="preview-doc-type-tag">
+              {chatTitle || "Document"}
+            </div>
           </div>
         </div>
         <div className="editor-section" ref={contentRef}>

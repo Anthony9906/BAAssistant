@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './ChatArea.css';
-import { FiPaperclip, FiImage, FiMic, FiGrid, FiSend, FiUser, FiCopy, FiShare2, FiHelpCircle, FiFileText, FiAlertCircle, FiX, FiCheck, FiRefreshCw } from 'react-icons/fi';
+import { FiPaperclip, FiImage, FiMic, FiGrid, FiSend, FiUser, FiCopy, FiShare2, FiHelpCircle, FiFileText, FiAlertCircle, FiX, FiCheck, FiRefreshCw, FiClock, FiMessageSquare } from 'react-icons/fi';
 import LoadingSpinner from './common/LoadingSpinner';
 import { supabase } from '../lib/supabase';
 import OpenAI from 'openai';
@@ -74,6 +74,7 @@ function ChatArea({
   const [showHelpModal, setShowHelpModal] = useState(false);
   const { openai, loading: openaiLoading } = useOpenAI();
   const processedMessageRef = useRef(null);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // 根据消息和加载状态决定是否显示欢迎图片
   const showWelcome = parentMessages.length === 0 && !parentLoading && !streamingMessage;
@@ -710,6 +711,13 @@ function ChatArea({
             title="App Help"
           >
             <FiHelpCircle className="help-icon" />
+          </button>
+          <button 
+            className="history-button"
+            onClick={() => setShowHistoryModal(true)}
+            title="历史对话"
+          >
+            <FiMessageSquare className="history-icon" />
           </button>
         </div>
         <button 

@@ -33,7 +33,7 @@
 
 .preview-header-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
 }
 
@@ -133,7 +133,7 @@
 .loading-progress {
   width: 30%;
   height: 100%;
-  background-color: #3b82f6;
+  background-color: #732c9e;
   animation: loading 1s infinite linear;
 }
 
@@ -331,4 +331,130 @@
 
 .save-title-button:hover {
   background-color: #45a049;
+}
+
+.chat-count-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  background: transparent;
+  color: #64748b;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chat-count-tag:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.chat-count-tag:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chat-count-tag .tag-icon {
+  font-size: 14px;
+}
+
+.preview-document-meta {
+  padding: 8px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.preview-document-tags {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.preview-doc-type-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #e0f2fe;  /* 蔚蓝色背景 */
+  color: #0284c7;       /* 蔚蓝色文字 */
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.preview-project-menu {
+  position: absolute;
+  top: 100%;
+  left: 24px;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  min-width: 200px;
+  margin-top: 4px;
+}
+
+.preview-project-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.preview-project-menu-item:hover {
+  background: #f1f5f9;
+}
+
+.preview-project-menu-item.active {
+  background: #e2e8f0;
+}
+
+.preview-project-menu-item.remove {
+  border-top: 1px solid #e2e8f0;
+  color: #ef4444;
+}
+
+.tag-icon {
+  font-size: 14px;
+}
+
+/* 移除不再需要的样式 */
+.preview-document-meta,
+.preview-document-tags {
+  display: none;
+}
+
+.delete-doc-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  width: 36px;
+  padding: 0;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background-color: #fee2e2;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-doc-button:hover {
+  background-color: #fecaca;
+  border-color: #ef4444;
+}
+
+.delete-doc-button svg {
+  width: 16px;
+  height: 16px;
 } 

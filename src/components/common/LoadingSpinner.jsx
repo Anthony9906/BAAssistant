@@ -3,9 +3,9 @@ import './LoadingSpinner.css';
 
 function LoadingSpinner() {
   return (
-    <div className="loading-spinner-overlay">
-      <div className="loading-spinner-container">
-        <div className="loading-spinner-circle"></div>
+    <div className="ai-loading-spinner-overlay">
+      <div className="ai-loading-spinner-container">
+        <div className="ai-loading-spinner-circle"></div>
       </div>
     </div>
   );
