@@ -123,7 +123,8 @@ function ChatContainer() {
           msg.id === message.replaceId ? {
             ...message,
             // 保留原消息的持久化状态，除非新消息明确指定
-            persisted: message.persisted ?? existingMessage?.persisted
+            persisted: message.persisted ?? existingMessage?.persisted,
+            id: message.id
           } : msg
         );
       }

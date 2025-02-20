@@ -221,7 +221,7 @@ function ChatArea({
   const saveMessageToSupabase = async (message, retryCount = 3) => {
     for (let i = 0; i < retryCount; i++) {
       try {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('messages')
           .insert([{
             chat_id: chatId,
@@ -230,10 +230,12 @@ function ChatArea({
             user_id: user.id,
             model: selectedModel || 'gpt-4o',
             created_at: message.created_at || new Date().toISOString()
-          }]);
+          }])
+          .select()  // 添加这行来获取插入的数据
+          .single(); // 添加这行来获取单条记录
 
         if (error) throw error;
-        return true;
+        return data;  // 返回保存的消息数据
       } catch (error) {
         console.error(`保存消息失败，尝试次数: ${i + 1}`, error);
         if (i === retryCount - 1) {
@@ -345,16 +347,27 @@ function ChatArea({
 
       // 保存最终的 AI 响应到数据库
       if (chatId) {
-        await saveMessageToSupabase({
+        const savedMessage = await saveMessageToSupabase({
           role: 'assistant',
           content: fullResponse,
           chat_id: chatId,
           model: selectedModel,
           created_at: new Date().toISOString()
         });
+        
+        // 最后一次更新消息，包含新的 ID
+        onNewMessage({
+          role: 'assistant',
+          content: fullResponse,
+          chat_id: chatId,
+          id: savedMessage.id,
+          model: selectedModel,
+          timestamp: tempLoadingMessage.timestamp,
+          replaceId: tempLoadingMessage.id
+        });
       } else {
         // 保存到 freetalks 表
-        const { error } = await supabase
+        const { data: savedMessage, error } = await supabase
           .from('freetalks')
           .insert([{
             user_id: user.id,
@@ -362,11 +375,23 @@ function ChatArea({
             content: fullResponse,
             created_at: new Date().toISOString(),
             model: selectedModel
-          }]);
+          }])
+          .select()
+          .single();
 
         if (error) {
           console.error('保存 AI 回复失败:', error);
           toast.error('保存消息失败，但对话可以继续');
+        } else {
+          // 最后一次更新消息，包含新的 ID
+          onNewMessage({
+            role: 'assistant',
+            content: fullResponse,
+            id: savedMessage.id,
+            model: selectedModel,
+            timestamp: tempLoadingMessage.timestamp,
+            replaceId: tempLoadingMessage.id
+          });
         }
       }
       
