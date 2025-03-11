@@ -22,6 +22,10 @@ const ROUTER_MODELS = {
     'anthropic/claude-3.5-sonnet': {
       name: 'Claude 3.5 Sonnet',
       description: 'Sonnet is particularly good at: Coding: Scores ~49% on SWE-Bench Verified; Data science: Augments human data science expertise; Visual processing: excelling at interpreting charts, graphs, and images; Agentic tasks: exceptional tool use.'
+    },
+    'google/gemini-2.0-flash-001': {
+      name: 'Gemini 2.0 Flash',
+      description: 'Gemini 2.0 Flash is a general-purpose assistant that can understand and generate text in a wide range of languages. '
     }
   },
   'router-b': {

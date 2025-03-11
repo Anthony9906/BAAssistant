@@ -20,6 +20,9 @@ const ROUTER_MODELS = {
     'deepseek/deepseek-r1:free': {
       name: 'DeepSeek R1'
     },
+    'google/gemini-2.0-flash-001': {
+      name: 'Gemini 2.0 Flash'
+    },
     'openai/gpt-4o-mini': {
       name: 'GPT-4o-mini'
     },
