@@ -76,7 +76,7 @@
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -103,15 +103,21 @@
 .doc-card h3 {
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: #60656d;
   margin: 0;
   line-height: 1.4;
+}
+
+.doc-title-en {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0;
 }
 
 .doc-description {
   font-size: 12px;
   color: #9ca3af;
-  margin: 0;
+  margin: 10px 0px 0px 0px;
   line-height: 1.5;
   flex-grow: 1;
 }
@@ -130,8 +136,8 @@
   padding: 6px 12px;
   font-size: 12px;
   border-radius: 6px;
-  background: #8e8bba;
-  color: white;
+  background: #e7f0fe;
+  color: #7c96c1;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -143,7 +149,8 @@
 }
 
 .generate-btn:hover {
-  background: #4338ca;
+  background: #6a88b8;
+  color: #e7f0fe;
   transform: translateY(-1px);
 }
 
@@ -172,23 +179,23 @@
   z-index: 1000;
 }
 
-.modal-content {
+.doc-modal-content {
   background: white;
   padding: 2rem;
   border-radius: 8px;
   width: 90%;
-  max-width: 600px;
+  max-width: 800px;
   max-height: 80vh;
   overflow-y: auto;
 }
 
-.modal-content h2 {
+.doc-modal-content h2 {
   margin-bottom: 0.5rem;
   font-size: 1.25rem;
   font-weight: 600;
 }
 
-.modal-content h3 {
+.doc-modal-content h3 {
   color: #6b7280;
   margin-bottom: 1.5rem;
   font-size: 1rem;
@@ -219,7 +226,7 @@
 
 .prompt-editor {
   width: 100%;
-  min-height: 120px;
+  min-height: 200px;
   padding: 12px;
   border: 1px solid #e5e7eb;
   border-radius: 6px;

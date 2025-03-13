@@ -6,6 +6,7 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
+import { DocumentDefinitions } from '../../data/DocumentDefinitions'; 
 
 function Library() {
   const [templates, setTemplates] = useState([]);
@@ -14,85 +15,7 @@ function Library() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const documentTypes = [
-    {
-      id: 1,
-      title: "调研提纲",
-      description: "生成包含项目调研对象与分析、方法论及关键问题清单的调研计划提纲",
-      icon: FiClipboard,
-      color: "#3B82F6"
-    },
-    {
-      id: 2,
-      title: "项目案例分析",
-      description: "创建包含市场洞察和建议的商业案例分析或行业最佳实践分析",
-      icon: FiBarChart2,
-      color: "#10B981"
-    },
-    {
-      id: 3,
-      title: "调研报告",
-      description: "将项目调研发现整理成结构清晰、见解深刻的完整调研报告",
-      icon: FiFileText,
-      color: "#6366F1"
-    },
-    {
-      id: 4,
-      title: "项目立项文档",
-      description: "生成包含现状分析、目标、价值分析和高阶计划的项目立项文档",
-      icon: FiFlag,
-      color: "#F59E0B"
-    },
-    {
-      id: 5,
-      title: "用户旅程分析",
-      description: "根据业务流程绘制和分析用户旅程，识别接触点和机会",
-      icon: FiMap,
-      color: "#EC4899"
-    },
-    {
-      id: 6,
-      title: "概念模型分析",
-      description: "根据项目规划与目标，进行业务对象分析并绘制概念模型",
-      icon: FiLayers,
-      color: "#8B5CF6"
-    },
-    {
-      id: 7,
-      title: "项目需求文档",
-      description: "编写详细的项目需求和规格说明文档",
-      icon: FiBox,
-      color: "#14B8A6"
-    },
-    {
-      id: 8,
-      title: "项目计划书",
-      description: "创建包含里程碑和交付物的结构化项目计划",
-      icon: FiUsers,
-      color: "#F97316"
-    },
-    {
-      id: 9,
-      title: "结项报告",
-      description: "生成全面的项目结项报告和评估文档",
-      icon: FiEdit,
-      color: "#6B7280"
-    },
-    {
-      id: 10,
-      title: "测试用例",
-      description: "生成包含测试场景、步骤和预期结果的详细测试用例文档",
-      icon: FiCheckSquare,
-      color: "#8B5CF6"
-    },
-    {
-      id: 11,
-      title: "项目用户手册",
-      description: "创建包含功能说明、操作指南和常见问题解答的用户手册",
-      icon: FiBook,
-      color: "#F59E0B"
-    }
-  ];
+  const documentTypes = DocumentDefinitions;
 
   useEffect(() => {
     fetchTemplates();
@@ -259,11 +182,12 @@ function Library() {
           {templates.map((doc) => {
             const IconComponent = doc.icon;
             return (
-              <div key={doc.id} className="doc-card">
+              <div key={doc.id} className={`doc-card`} style={{backgroundImage: `linear-gradient(to bottom, #fff, ${doc.color}15)`}}>
                 <div className="doc-icon" style={{ backgroundColor: `${doc.color}15` }}>
                   <IconComponent style={{ color: doc.color }} />
                 </div>
                 <h3>{doc.title}</h3>
+                <div className="doc-title-en" style={{color: `${doc.color}90`}}>{doc.title_en}</div>
                 <p className="doc-description">{doc.description}</p>
                 <div className="card-footer">
                   <button 
@@ -289,7 +213,7 @@ function Library() {
       {/* 提示词编辑弹窗 */}
       {editingTemplate && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div className="doc-modal-content">
             <h2>Edit Template Prompts</h2>
             <h3>{editingTemplate.title}</h3>
             

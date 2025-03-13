@@ -14,6 +14,7 @@ import './App.css';
 import { Toaster } from 'react-hot-toast';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import Teams from './components/Teams/Teams';
 
 // 聊天容器组件
 function ChatContainer() {
@@ -210,6 +211,7 @@ function AppContent() {
           <Route path="/docs" element={<Docs />} />
           <Route path="/chats/:chatId" element={<ChatContainer />} />
           <Route path="/chats" element={<ChatContainer />} />
+          <Route path="/teams" element={<Teams />} />
           <Route path="*" element={<Navigate to="/chats" replace />} />
         </Routes>
       </main>
