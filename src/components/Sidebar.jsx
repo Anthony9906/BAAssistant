@@ -89,7 +89,7 @@ function Sidebar() {
       setChatHistory(historyWithCount);
     } catch (error) {
       console.error('Error fetching chat history:', error);
-      toast.error('加载聊天记录失败');
+      toast.error('Failed to load chat history, please try again');
     }
   };
 
@@ -270,7 +270,7 @@ function Sidebar() {
                 <div className="chat-history-content">
                   <FiMessageCircle className="chat-icon" />
                   <div className="chat-info">
-                    <span className="chat-title">Generate {truncateTitle(chat.title)}</span>
+                    <span className="chat-title">{truncateTitle(chat.title)}</span>
                     <span className="chat-history-timestamp">{formatTime(chat.created_at)}</span>
                   </div>
                   <span className="message-count">{chat.messageCount}</span>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Library.css';
-import { FiHome, FiBox, FiClipboard, FiBarChart2, FiUsers, FiMap, FiLayers, FiFileText, FiCheckSquare, FiFlag, FiEdit, FiPlus, FiEdit2, FiMessageSquare, FiBook } from 'react-icons/fi';
+import { FiHome, FiBox, FiBarChart2, FiUsers, FiMap, FiLayers, FiFileText, FiCheckSquare, FiFlag, FiEdit, FiPlus, FiEdit2, FiMessageSquare, FiBook } from 'react-icons/fi';
+import { Sparkles } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
@@ -55,7 +56,7 @@ function Library() {
         .from('document_templates')
         .select('*')
         .eq('type_id', typeId)
-        .single();
+        .maybeSingle();
 
       if (checkError && checkError.code !== 'PGRST116') { // PGRST116 是"没有找到记录"的错误
         throw checkError;
@@ -69,6 +70,7 @@ function Library() {
           chat_prompt: chatPrompt,
           generate_prompt: generatePrompt,
           title: templates.find(t => t.id === typeId)?.title || '',
+          title_en: templates.find(t => t.id === typeId)?.title_en || '',
           description: templates.find(t => t.id === typeId)?.description || ''
         })
         .eq(existingTemplate ? 'type_id' : '', typeId) // 如果是更新操作才添加条件
@@ -83,7 +85,7 @@ function Library() {
       ));
       setEditingTemplate(null);
 
-      toast.success('提示词保存成功', {
+      toast.success('Prompt saved successfully', {
         duration: 3000,
         position: 'top-center',
         style: {
@@ -95,7 +97,7 @@ function Library() {
       });
     } catch (error) {
       console.error('Error saving prompts:', error);
-      toast.error('提示词保存失败，请重试', {
+      toast.error('Failed to save prompts, please try again', {
         duration: 3000,
         position: 'top-center',
         style: {
@@ -125,14 +127,14 @@ function Library() {
     }
 
     try {
-      // 从 localStorage 获取当前模型，默认值改为 'gpt-4o-mini'
-      const currentModel = localStorage.getItem('selectedModel') || 'openai/gpt-4o-mini';
+      // 从 localStorage 获取当前模型，默认值改为 'gemini-2.0-flash'
+      const currentModel = localStorage.getItem('selectedModel') || 'google/gemini-2.0-flash';
 
       // 创建新的 chat
       const { data: chat, error: chatError } = await supabase
         .from('chats')
         .insert([{
-          title: doc.title,
+          title: doc.title_en,
           template_id: doc.id,
           chat_prompt: doc.chat_prompt,
           generate_prompt: doc.generate_prompt,
@@ -194,7 +196,7 @@ function Library() {
                     className="generate-btn"
                     onClick={() => handleGenerate(doc)}
                   >
-                    <FiFileText />
+                    <Sparkles size={16} />
                     <span>Generate</span>
                   </button>
                   <button 

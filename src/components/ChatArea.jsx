@@ -317,7 +317,7 @@ function ChatArea({
         messages: [
           {
             role: "system",
-            content: templatePrompt || "你是一名资深的项目管理专家，你对企业管理有深入的了解，同时具有丰富的数字化项目实践经验，擅长为企业提供数字化项目咨询与建议"
+            content: templatePrompt || "你是一名资深的项目管理专家，你对企业管理也有深入的了解，同时具有丰富的数字化项目实践经验，擅长为企业提供数字化项目咨询与建议"
           },
           ...parentMessages.map(msg => ({
             role: msg.role,
